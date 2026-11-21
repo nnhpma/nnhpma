@@ -801,11 +801,6 @@ async uploadPhotos(e, max, withDate = false) {
       e.target.value = "";
     }
   },
-    } finally {
-      document.getElementById("uploadHint")?.remove();
-      e.target.value = "";
-    }
-  },
   renderModalGrid() {
     const g = document.getElementById("modalPhotoGrid");
     if (g) g.innerHTML = this.tempPhotos.map((p, i) => `<div class="preview-item">${p.url ? `<img src="${p.url}">` : `<div class="ph" style="--h:${p.hue || 250};font-size:11px">佔位圖</div>`}<button type="button" onclick="app.tempPhotos.splice(${i},1);app.renderModalGrid()">✕</button></div>`).join("");
