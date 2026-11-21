@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>魔法相簿～暖暖拍照小天地</title>
+  <link rel="preconnect" href="https://googleapis.com">
+  <link href="https://googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=IM+Fell+English:ital@1&family=Noto+Serif+TC:wght@400;600;900&display=swap" rel="stylesheet">
+  <style>
+    :root{color-scheme:dark;--bg:#0c0a22;--paper:#171244;--paper2:#201a58;--ink:#ece8ff;--muted:#b3abe6;--line:#4b3f9a;--gold:#e6c27a;--wax:#c58bff;--danger:#e05a6d;--shadow:rgba(0,0,0,.65);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+    html{scroll-padding-top:env(safe-area-inset-top,0px)}
+    *,*::before,*::after{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.8 "Noto Serif TC",serif;background-image:radial-gradient(ellipse at 20% 0,rgba(120,80,255,.38),transparent 55%),radial-gradient(ellipse at 90% 30%,rgba(40,110,255,.24),transparent 50%),radial-gradient(1.5px 1.5px at 12% 22%,#fff9,transparent),radial-gradient(1.5px 1.5px at 38% 8%,#fff9,transparent),radial-gradient(1px 1px at 63% 18%,#fff9,transparent),radial-gradient(1.5px 1.5px at 84% 9%,#fffb,transparent);background-attachment:fixed}
+    .fell{font-family:"IM Fell English",serif;font-style:italic;letter-spacing:.02em}
+    .book{max-width:1020px;margin:0 auto;padding:20px 14px 56px}
+    header{text-align:center;padding:28px 8px 10px}
+    header h1{margin:0;font:900 clamp(34px,8.5vw,60px)/1.2 "Noto Serif TC",serif;letter-spacing:.12em;color:var(--ink);text-shadow:0 0 22px rgba(170,130,255,.75),0 0 3px rgba(255,255,255,.4)}
+    header .sub{margin:6px 0 0;font-size:clamp(16px,4vw,22px);color:var(--gold);letter-spacing:.3em}
+    header .en{margin:10px 0 0;color:var(--muted);font-size:18px}
+    nav{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:22px 0 0}
+    nav button,.house button{font:inherit;cursor:pointer;color:var(--ink);background:var(--paper2);border:1px solid var(--line);border-bottom:0;border-radius:10px 10px 0 0;padding:8px 18px 10px;min-height:44px}
+    nav button small{display:block;font:italic 13px/1.2 "IM Fell English",serif;color:var(--muted)}
+    nav button[aria-selected="true"]{background:var(--paper);font-weight:600;box-shadow:0 -3px 0 var(--wax) inset}
+    .page{display:none;background:var(--paper);border:1px solid var(--line);border-radius:4px 4px 14px 14px;padding:28px 20px 38px;position:relative;box-shadow:0 14px 40px var(--shadow),0 0 60px rgba(110,80,255,.2)}
+    .page.on{display:block}
+    .page::before{content:"";position:absolute;inset:7px;border:1px solid var(--line);border-radius:3px;pointer-events:none;opacity:.7}
+    h2{margin:0 0 4px;font:900 26px/1.4 "Noto Serif TC",serif;text-align:center;letter-spacing:.06em}
+    .lead{text-align:center;color:var(--muted);margin:0 0 16px}
+    .orn{display:block;margin:0 auto 24px;width:160px;height:12px;color:var(--gold)}
+    .btn{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(180deg,#2d2473,#1e1754);color:var(--gold);border:1px solid var(--gold);border-radius:6px;padding:7px 14px;font:600 14px/1.4 "Noto Serif TC",serif;cursor:pointer}
+    .btn-sm{padding:4px 10px;font-size:13px;border-radius:4px}
+    .btn-danger{border-color:var(--danger);color:#ffb3be;background:rgba(140,30,48,.35)}
+    .btn-ghost{background:transparent;border-color:var(--line);color:var(--muted)}
+    .admin-bar{display:none;background:rgba(36,28,92,.95);border:1px solid var(--gold);border-radius:8px;padding:10px 16px;margin-bottom:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+    body.is-admin .admin-bar{display:flex}
+    .admin-only{display:none!important}
+    body.is-admin .admin-only{display:inline-flex!important}
+    .section-toolbar{display:flex;justify-content:center;margin-bottom:22px}
+    .event{margin:0 0 42px;padding-bottom:28px;border-bottom:1px dashed rgba(110,95,200,.4)}
+    .event:last-of-type{border-bottom:0;margin-bottom:10px;padding-bottom:0}
+    .event-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+    .event h3{margin:0;font:600 22px/1.4 "Noto Serif TC",serif}
+    .date{color:var(--wax);font-size:14px;margin-top:2px}
+    .event p{margin:8px 0 18px;max-width:65ch;color:#dcd6ff}
+    .snap{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:20px 16px}
+    .pol{background:#efeaff;padding:8px 8px 24px;box-shadow:0 6px 14px var(--shadow);position:relative;transform:rotate(var(--r,-1.5deg));margin:0;cursor:zoom-in;transition:transform .2s}
+    .pol:nth-child(2n){--r:1.8deg}.pol:nth-child(3n){--r:-2.2deg}.pol:nth-child(5n){--r:.9deg}
+    .pol::before{content:"";position:absolute;top:-9px;left:50%;width:54px;height:18px;margin-left:-27px;background:rgba(160,130,255,.52);transform:rotate(-3deg);pointer-events:none}
+    .pol:hover{transform:rotate(0) scale(1.035);z-index:2}
+    .pol img,.ph{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:#231c5c}
+    .ph{background:linear-gradient(150deg,hsl(var(--h,250) 38% 58%),hsl(calc(var(--h,250) + 30) 40% 30%));display:grid;place-items:center;color:rgba(255,248,225,.85);font:italic 14px "IM Fell English",serif;text-align:center;padding:6px}
+    .pol figcaption{position:absolute;bottom:4px;left:8px;right:8px;text-align:center;font-size:12px;color:#463c7a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .house{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 24px}
+    .house button{border-bottom:1px solid var(--line);border-radius:4px 4px 18px 18px;padding:8px 16px 10px;border-top:5px solid var(--c)}
+    .house button[aria-pressed="true"]{background:var(--c);color:var(--t);font-weight:600}
+    .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:22px}
+.card{background:#efeaff;color:#241c52;border:1px solid #b8aaf0;border-top:8px solid var(--c);padding:12px;box-shadow:0 6px 16px var(--shadow);border-radius:3px;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+    body.is-admin .card[draggable="true"]{cursor:grab}
+    body.is-admin .card.dragging{opacity:.45;transform:scale(.98)}
+    body.is-admin .card.drag-over{outline:2px dashed var(--gold);outline-offset:3px}
+shadow);border-radius:3px;display:flex;flex-direction:column}
+    .card-portrait{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:2px;cursor:zoom-in}
+    .card h4{margin:10px 0 0;font:900 19px/1.3 "Noto Serif TC",serif}
+    .card .hn{font-size:13px;font-weight:600;color:var(--c2)}
+    .card .ttl{margin:3px 0 10px;color:#524885;font-size:14px;font-style:italic}
+    .mini{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:auto}
+    .mini img,.mini .ph{width:100%;aspect-ratio:1;object-fit:cover;border-radius:2px;cursor:zoom-in}
+    .card-actions{display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px dashed #c2b6f2}
+    .scroll-wrapper{position:relative;margin:10px auto 0;padding:0 18px;max-width:920px}
+    .scroll-roller{position:absolute;top:-8px;bottom:-8px;width:24px;border-radius:12px;background:linear-gradient(90deg,#1b153d,#483b8c 35%,#e6c27a 50%,#3a2e75 70%,#120d2b);border:1px solid var(--gold);box-shadow:0 0 18px rgba(0,0,0,.85);z-index:5;pointer-events:none}
+    .scroll-roller::before,.scroll-roller::after{content:"";position:absolute;left:50%;transform:translateX(-50%);width:30px;height:14px;border-radius:4px;background:radial-gradient(circle at 30% 30%,#ffe6a8,#b88a38);border:1px solid #593e10}
+    .scroll-roller::before{top:-10px}.scroll-roller::after{bottom:-10px}
+    .scroll-roller.left{left:4px}.scroll-roller.right{right:4px}
+    .map-viewport{position:relative;aspect-ratio:16/11;min-height:360px;border-radius:4px;overflow:hidden;border-top:2px solid rgba(230,194,122,.55);border-bottom:2px solid rgba(230,194,122,.55);background:radial-gradient(circle at 50% 45%,rgba(62,51,138,.48),rgba(22,17,56,.92) 72%,rgba(11,8,32,.98));box-shadow:inset 24px 0 36px rgba(5,3,18,.9),inset -24px 0 36px rgba(5,3,18,.9),0 12px 30px rgba(0,0,0,.75);touch-action:none;user-select:none}
+    .map-stage{position:absolute;inset:0;transform-origin:center center;transition:transform .2s ease-out}
+    .map-stage.dragging{transition:none;cursor:grabbing}
+    .map-stage svg{width:100%;height:100%;display:block}
+    .map-controls{position:absolute;top:12px;right:16px;display:flex;gap:6px;z-index:6}
+    .map-controls button{width:36px;height:36px;border-radius:50%;border:1px solid var(--gold);background:rgba(18,14,48,.85);color:var(--gold);font:700 18px/1 sans-serif;cursor:pointer;display:grid;place-items:center}
+    .map-hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(12,10,38,.82);border:1px solid rgba(230,194,122,.4);color:var(--gold);font-size:12px;padding:3px 12px;border-radius:20px;pointer-events:none;z-index:4;white-space:nowrap}
+    .pin{position:absolute;transform:translate(-50%,-50%);background:none;border:0;cursor:pointer;color:#fff6dc;font:600 13px/1.2 "Noto Serif TC",serif;text-align:center;padding:4px;min-width:44px;min-height:44px;z-index:3}
+    .pin i{display:block;margin:0 auto 3px;width:15px;height:15px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#8b6eff;border:2px solid var(--gold);box-shadow:0 0 8px rgba(230,194,122,.7)}
+    .pin span{display:inline-block;background:rgba(14,11,42,.88);border:1px solid rgba(230,194,122,.4);padding:1px 5px;border-radius:4px;font-size:11px;white-space:nowrap;opacity:.88;transition:all .2s}
+    .pin:hover,.pin[aria-pressed="true"]{z-index:10}.pin:hover span,.pin[aria-pressed="true"] span{font-size:13px;padding:2px 8px;opacity:1;border-color:var(--gold);color:var(--gold);background:rgba(34,26,84,.96);box-shadow:0 0 12px rgba(230,194,122,.5)}
+    .pin[aria-pressed="true"] span{border-color:var(--gold);color:var(--gold);background:rgba(34,26,84,.95)}
+    .spot{margin-top:24px;padding:20px;background:var(--paper2);border:1px solid var(--line);border-top:3px solid var(--gold);border-radius:8px}
+    .spot-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.spot h3{margin:0;font:900 21px/1.3 "Noto Serif TC",serif;color:var(--gold)}
+    .spot-desc{margin:6px 0 16px;color:#e2dcff;font-size:15px}
+    .lightbox{position:fixed;inset:0;background:rgba(7,5,22,.94);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+    .lightbox.open{display:flex}
+    .lb-inner{max-width:92vw;max-height:90vh;display:flex;flex-direction:column;align-items:center}
+    .lb-img{max-width:90vw;max-height:76vh;border:6px solid #efeaff;border-radius:3px;object-fit:contain}
+    .lb-cap{margin-top:12px;text-align:center;color:var(--ink);font-size:15px}
+    .lb-cap small{display:block;color:var(--gold);font-size:13px}
+    .lb-close,.lb-prev,.lb-next{position:fixed;background:rgba(28,22,74,.85);border:1px solid var(--gold);color:var(--gold);width:44px;height:44px;border-radius:50%;font-size:22px;cursor:pointer;display:grid;place-items:center}
+    .lb-close{top:18px;right:20px}.lb-prev{left:16px;top:50%;transform:translateY(-50%)}.lb-next{right:16px;top:50%;transform:translateY(-50%)}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(8,6,26,.86);display:none;align-items:center;justify-content:center;z-index:900;padding:16px;overflow-y:auto}
+    .modal-backdrop.open{display:flex}
+    .modal{background:var(--paper);border:1px solid var(--gold);border-radius:10px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:22px}
+    .modal h3{margin:0 0 14px;font:900 20px "Noto Serif TC",serif;color:var(--gold)}
+    .field{margin-bottom:14px}
+    .field label{display:block;font-size:14px;font-weight:600;margin-bottom:5px}
+    .field input[type="text"],.field input[type="number"],.field textarea,.field select{width:100%;background:#100c30;border:1px solid var(--line);border-radius:6px;padding:9px 12px;color:var(--ink);font:inherit}
+    .field textarea{min-height:80px;resize:vertical}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin-top:8px}
+    .preview-item{position:relative;aspect-ratio:1;border-radius:4px;overflow:hidden;border:1px solid var(--line)}
+    .preview-item img{width:100%;height:100%;object-fit:cover}
+    .preview-item button{position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(180,30,50,.9);color:#fff;cursor:pointer}
+    .modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+    footer{margin-top:34px;text-align:center;color:var(--muted);font-size:14px}
+    .admin-trigger{background:none;border:1px solid rgba(179,171,230,.3);color:var(--muted);border-radius:20px;padding:4px 14px;font-size:12px;cursor:pointer;margin-top:10px}
+    @media(max-width:600px){.scroll-wrapper{padding:0 10px}.scroll-roller{width:16px}.map-viewport{aspect-ratio:4/3;min-height:300px}.snap{grid-template-columns:repeat(2,1fr);gap:14px 10px}.cards{grid-template-columns:1fr}}
+    @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  </style>
+</head>
+<body>
+<div class="book">
+  <header>
+    <h1>魔法相簿</h1>
+    <p class="sub">暖暖拍照小天地</p>
+    <p class="en fell"></p>
+    <nav role="tablist">
+      <button role="tab" aria-selected="true" data-p="a">活動紀錄<small>Event </small></button>
+      <button role="tab" aria-selected="false" data-p="b">巫師檔案<small>Wizard Files</small></button>
+      <button role="tab" aria-selected="false" data-p="c">校園巡禮<small>Magic Tour</small></button>
+    </nav>
+  </header>
+
+  <div class="admin-bar">
+    <div><strong>✦ 站長管理模式已啟動</strong><span id="storageBadge" style="font-size:13px;color:var(--muted);margin-left:8px;">連線檢查中...</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-sm" onclick="app.exportBackup()">匯出資料備份</button>
+      <button class="btn btn-sm" onclick="document.getElementById('importFile').click()">匯入備份</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="app.importBackup(event)">
+      <button class="btn btn-sm btn-ghost" onclick="app.logout()">登出站長</button>
+    </div>
+  </div>
+
+  <section class="page on" id="a">
+    <h2>歷屆活動紀錄</h2>
+    <p class="lead fell"></p>
+    <svg class="orn" viewBox="0 0 160 12" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 6h60M98 6h60"/><path d="M80 1l5 5-5 5-5-5z" fill="currentColor"/><circle cx="68" cy="6" r="2"/><circle cx="92" cy="6" r="2"/></svg>
+    <div class="section-toolbar admin-only"><button class="btn" onclick="app.openEventModal()">＋ 新增活動紀錄</button></div>
+    <div id="eventList"></div>
+  </section>
+
+  <section class="page" id="b">
+    <h2>巫師檔案</h2>
+    <p class="lead fell"></p>
+    <svg class="orn" viewBox="0 0 160 12" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 6h60M98 6h60"/><path d="M80 1l5 5-5 5-5-5z" fill="currentColor"/><circle cx="68" cy="6" r="2"/><circle cx="92" cy="6" r="2"/></svg>
+    <div class="section-toolbar admin-only"><button class="btn" onclick="app.openWizardModal()">＋ 新增巫師檔案</button></div>
+    <div class="house" id="houseTabs"></div>
+    <div class="cards" id="wizardCards"></div>
+  </section>
+
+  <section class="page" id="c">
+    <h2>校園巡禮</h2>
+    <p class="lead fell"></p>
+    <svg class="orn" viewBox="0 0 160 12" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 6h60M98 6h60"/><path d="M80 1l5 5-5 5-5-5z" fill="currentColor"/><circle cx="68" cy="6" r="2"/><circle cx="92" cy="6" r="2"/></svg>
+    <div class="section-toolbar admin-only"><button class="btn" onclick="app.openSpotModal()">＋ 新增地圖地點</button></div>
+    <div class="scroll-wrapper">
+      <div class="scroll-roller left"></div>
+      <div class="scroll-roller right"></div>
+      <div class="map-viewport" id="mapViewport">
+        <div class="map-controls">
+          <button type="button" onclick="mapCtrl.zoom(0.25)">＋</button>
+          <button type="button" onclick="mapCtrl.zoom(-0.25)">－</button>
+          <button type="button" onclick="mapCtrl.reset()">⟲</button>
+        </div>
+        <div class="map-stage" id="mapStage">
+          <svg viewBox="0 0 800 550" preserveAspectRatio="xMidYMid slice" xmlns="http://w3.org">
+            <defs>
+              <radialGradient id="castleGlow" cx="50%" cy="42%" r="45%"><stop offset="0%" stop-color="#e6c27a" stop-opacity="0.22"/><stop offset="60%" stop-color="#8a6eff" stop-opacity="0.08"/><stop offset="100%" stop-color="#0b0820" stop-opacity="0"/></radialGradient>
+              <linearGradient id="lakeGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#19164a" stop-opacity="0.85"/><stop offset="100%" stop-color="#0d0b2b" stop-opacity="0.95"/></linearGradient>
+            </defs>
+            <rect x="24" y="18" width="752" height="514" rx="6" fill="none" stroke="#e6c27a" stroke-opacity="0.32" stroke-width="1.2"/>
+            <rect x="30" y="24" width="740" height="502" rx="4" fill="none" stroke="#e6c27a" stroke-opacity="0.18" stroke-width="0.8" stroke-dasharray="6 4"/>
+            <circle cx="400" cy="220" r="240" fill="url(#castleGlow)"/>
+            <g transform="translate(88,76)" stroke="#e6c27a" stroke-opacity="0.55" fill="none">
+              <circle r="24" stroke-width="0.9"/><circle r="19" stroke-width="0.6" stroke-dasharray="2 2"/>
+              <path d="M0 -30 L4 -6 L28 0 L4 6 L0 30 L-4 6 L-28 0 L-4 -6 Z" fill="#e6c27a" fill-opacity="0.15"/>
+              <text x="0" y="-34" text-anchor="middle" fill="#e6c27a" font-size="9" font-family="IM Fell English,serif">N</text>
+            </g>
+            <g stroke="#e6c27a" stroke-opacity="0.28" fill="none" stroke-width="1.1" stroke-linecap="round">
+              <path d="M40 165 Q95 110 155 155 Q205 115 260 150"/>
+              <path d="M530 145 Q595 95 660 140 Q710 108 765 150"/>
+              <path d="M610 160 l-8 16 h16 z M610 170 l-10 18 h20 z M645 152 l-7 14 h14 z M645 161 l-9 16 h18 z M680 168 l-8 16 h16 z M680 178 l-10 18 h20 z M625 192 l-7 14 h14 z M662 198 l-8 15 h16 z"/>
+            </g>
+            <path d="M310 385 C360 365,510 360,620 390 C700 415,690 485,560 495 C430 505,310 480,290 435 C280 410,290 395,310 385 Z" fill="url(#lakeGrad)" stroke="#e6c27a" stroke-opacity="0.35" stroke-width="1.1"/>
+            <g stroke="#e6c27a" stroke-opacity="0.25" fill="none" stroke-width="0.9"><path d="M380 410 Q420 404 460 412 T540 410"/><path d="M410 442 Q465 436 520 444 T600 440"/></g>
+            <g stroke="#e6c27a" stroke-width="1.3" fill="#181344" fill-opacity="0.9" stroke-linejoin="round">
+              <path d="M235 255 Q395 235 545 260 L530 285 Q395 268 250 285 Z" fill="#110d33"/>
+              <rect x="275" y="195" width="75" height="60"/><polygon points="270,195 312,155 355,195"/>
+              <rect x="355" y="150" width="44" height="105"/><polygon points="350,150 377,95 404,150"/>
+              <rect x="404" y="185" width="58" height="70"/>
+              <rect x="462" y="162" width="34" height="93"/><polygon points="458,162 479,115 500,162"/>
+              <circle cx="479" cy="182" r="8" fill="#0d0a29"/>
+              <rect x="242" y="175" width="24" height="80"/><polygon points="238,175 254,132 270,175"/>
+              <rect x="502" y="182" width="22" height="73"/><polygon points="498,182 513,144 528,182"/>
+              <g fill="#ffe099" stroke="none" opacity="0.85">
+                <rect x="290" y="210" width="5" height="12" rx="2"/><rect x="308" y="210" width="5" height="12" rx="2"/><rect x="326" y="210" width="5" height="12" rx="2"/>
+                <rect x="372" y="172" width="6" height="14" rx="2"/><rect x="372" y="202" width="6" height="14" rx="2"/>
+                <rect x="422" y="205" width="6" height="12" rx="2"/><rect x="438" y="205" width="6" height="12" rx="2"/>
+              </g>
+            </g>
+            <g transform="translate(145,325) rotate(-14)" stroke="#e6c27a" stroke-opacity="0.55" fill="none">
+              <ellipse cx="0" cy="0" rx="58" ry="30" stroke-width="1.2"/><ellipse cx="0" cy="0" rx="48" ry="22" stroke-width="0.7" stroke-dasharray="3 3"/>
+              <circle cx="-36" cy="0" r="3" fill="#e6c27a"/><circle cx="36" cy="0" r="3" fill="#e6c27a"/>
+            </g>
+            <g stroke="#e6c27a" stroke-opacity="0.65" fill="none" stroke-width="1.5" stroke-dasharray="3 6" stroke-linecap="round">
+              <path d="M377 255 C360 295,250 300,160 325"/><path d="M390 255 C410 305,430 345,445 395"/>
+              <path d="M475 255 C535 245,585 215,635 190"/><path d="M295 255 C265 335,245 405,220 455"/>
+            </g>
+            <text x="655" y="65" text-anchor="middle" fill="#e6c27a" fill-opacity="0.65" font-size="14" font-family="IM Fell English,serif" font-style="italic">Castle Grounds &amp; Memories</text>
+          </svg>
+          <div id="mapPins"></div>
+        </div>
+        <div class="map-hint">提示：點擊圖釘查看團拍紀錄｜可用滾輪、雙指或右上角按鈕縮放地圖</div>
+      </div>
+    </div>
+    <div class="spot" id="spotDetail" aria-live="polite"></div>
+  </section>
+
+  <footer>
+    <p class="fell" style="margin:0">Every photograph holds a trace of magic.</p>
+    <p style="margin:4px 0 0;font-size:13px">魔法相簿～暖暖拍照小天地</p>
+    <button type="button" class="admin-trigger" id="adminLoginBtn" onclick="app.promptLogin()">✦ 站長管理入口</button>
+  </footer>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="if(event.target===this)lb.close()">
+  <button type="button" class="lb-close" onclick="lb.close()">✕</button>
+  <button type="button" class="lb-prev" onclick="lb.step(-1)">‹</button>
+  <div class="lb-inner"><img class="lb-img" id="lbImg" src="" alt=""><div class="lb-cap" id="lbCap"></div></div>
+  <button type="button" class="lb-next" onclick="lb.step(1)">›</button>
+</div>
+
+<div class="modal-backdrop" id="editorModal">
+  <div class="modal" id="editorContent"></div>
+</div>
+
+<script>
+const FIREBASE_CONFIG = { enabled: false, apiKey: "", authDomain: "", projectId: "", storageBucket: "", messagingSenderId: "", appId: "" };
+const ADMIN_PASSCODE = "nnhpma2026";
+
+async function compressImage(file, maxDim = 1400, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) { height = Math.round(height * maxDim / width); width = maxDim; }
+          else { width = Math.round(width * maxDim / height); height = maxDim; }
+        }
+        const c = document.createElement("canvas");
+        c.width = width; c.height = height;
+        c.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(c.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+const DEFAULT_DATA = {
+  events: [
+    { id: "ev_1", title: "星夜舞會：冬日幻境之夜", date: "2026-12-24", desc: "大禮堂的穹頂降下細碎星塵，大家換上最華麗的禮服與長袍，在燭光與華爾滋樂聲中留下今年最溫暖的合影。", photos: [{ url: "", hue: 255, caption: "禮堂主舞台大合照" }, { url: "", hue: 275, caption: "星光走廊雙人留念" }, { url: "", hue: 235, caption: "舞會開場前夕" }, { url: "", hue: 290, caption: "甜點桌旁的歡笑" }, { url: "", hue: 245, caption: "午夜鐘聲倒數" }] },
+    { id: "ev_2", title: "萬聖夜魁地奇友誼賽", date: "2026-10-31", desc: "南瓜燈高掛在球場四周，四學院派出精銳搜捕手在夜空中追逐金探子，賽後全體在看台上舉杯慶祝。", photos: [{ url: "", hue: 215, caption: "賽前飛行掃帚列隊" }, { url: "", hue: 35, caption: "金探子現身瞬間" }, { url: "", hue: 265, caption: "看台應援團合照" }, { url: "", hue: 195, caption: "賽後頒獎時刻" }, { url: "", hue: 280, caption: "萬聖夜南瓜大餐" }] }
+  ],
+  wizards: [
+    { id: "wz_1", name: "艾琳娜・星語", house: "ravenclaw", title: "天文塔觀星首席", portrait: "", hue: 225, photos: [{ url: "", hue: 220, caption: "午夜星圖測繪" }, { url: "", hue: 240, caption: "交誼廳閱讀時光" }] },
+    { id: "wz_2", name: "里昂・焰心", house: "gryffindor", title: "破釜盃搜捕手", portrait: "", hue: 355, photos: [{ url: "", hue: 10, caption: "球場勝利歡呼" }, { url: "", hue: 345, caption: "壁爐旁的冒險計畫" }] },
+    { id: "wz_3", name: "賽巴斯汀・夜影", house: "slytherin", title: "黑湖魔藥研究員", portrait: "", hue: 150, photos: [{ url: "", hue: 160, caption: "地窖魔藥調配" }, { url: "", hue: 140, caption: "湖底窗景沉思" }] },
+    { id: "wz_4", name: "漢娜・暖陽", house: "hufflepuff", title: "溫室奇異植物守護者", portrait: "", hue: 45, photos: [{ url: "", hue: 50, caption: "魔蘋果照料日常" }, { url: "", hue: 38, caption: "廚房午後茶會" }] }
+  ],
+spots: [
+    { id: "sp_1", name: "霍格華茲－城堡上空", x: 50, y: 18, desc: "乘著飛天掃帚俯瞰整座夜空下的魔法城堡。", photos: [] },
+    { id: "sp_2", name: "霍格華茲－海格小屋", x: 74, y: 74, desc: "禁忌森林邊緣溫暖的石砌小屋與南瓜田。", photos: [] },
+    { id: "sp_3", name: "霍格華茲－舞會", x: 58, y: 54, desc: "星光璀璨、華爾滋樂聲悠揚的城堡盛大舞會。", photos: [] },
+    { id: "sp_10", name: "城堡主樓－交誼廳 獅", x: 60, y: 24, desc: "暖紅爐火與金色掛毯交織的八樓勇氣高塔。", photos: [] },
+    { id: "sp_11", name: "城堡主樓－交誼廳 鷹", x: 68, y: 20, desc: "西塔頂端星象穹頂與書卷環繞的智慧之家。", photos: [] },
+    { id: "sp_12", name: "城堡主樓－交誼廳 蛇", x: 62, y: 84, desc: "黑湖水底綠光搖曳的靜謐地下石室。", photos: [] },
+    { id: "sp_13", name: "城堡主樓－交誼廳 貛", x: 48, y: 78, desc: "緊鄰廚房、陽光與綠植相伴的溫馨交誼廳。", photos: [] },
+    { id: "sp_14", name: "城堡主樓－圖書館", x: 60, y: 40, desc: "無數魔法典籍與禁書區靜靜佇立的知識殿堂。", photos: [] },
+    { id: "sp_15", name: "城堡主樓－寢室", x: 38, y: 46, desc: "與室友們聊天、換裝與休憩的溫馨小窩。", photos: [] },
+    { id: "sp_16", name: "城堡主樓－校長室", x: 48, y: 12, desc: "最高塔尖石像鬼守護、藏著歷代校長畫像的辦公室。", photos: [] },
+    { id: "sp_17", name: "城堡主樓－大廳", x: 76, y: 54, desc: "一樓大門旁四學院長桌與懸浮燭光匯聚的大廳。", photos: [] },
+    { id: "sp_18", name: "城堡主樓－走廊", x: 50, y: 52, desc: "會移動的旋轉樓梯與會說話畫像守護的長廊。", photos: [] },
+    { id: "sp_19", name: "城堡主樓－盥洗室", x: 68, y: 48, desc: "彩繪玻璃窗與氤氳水氣交織的古典盥洗室。", photos: [] },
+    { id: "sp_20", name: "城堡主樓－廚房", x: 64, y: 70, desc: "大廳正下方、搔搔梨子畫像就能進入的廚房。", photos: [] },
+    { id: "sp_21", name: "城堡主樓－符咒學教室", x: 48, y: 34, desc: "羽毛飄浮與魔杖星火閃爍的四樓符咒課堂。", photos: [] },
+    { id: "sp_22", name: "城堡主樓－占卜學教室", x: 58, y: 15, desc: "北塔閣樓裡水晶球與薰香瀰漫的神秘教室。", photos: [] },
+    { id: "sp_23", name: "城堡主樓－黑魔法防禦教室", x: 38, y: 34, desc: "學習繳械咒與護法咒的三樓實戰防禦教室。", photos: [] },
+    { id: "sp_24", name: "城堡主樓－變形學教室", x: 38, y: 58, desc: "二樓中庭旁嚴謹而奇妙的變形學課堂。", photos: [] },
+    { id: "sp_25", name: "城堡主樓－魔法史教室", x: 50, y: 62, desc: "記載著巫師界千年風雲的古老教室。", photos: [] },
+    { id: "sp_26", name: "城堡主樓－魔藥學教室", x: 48, y: 88, desc: "大釜沸騰與各色魔藥微光閃耀的陰冷地窖。", photos: [] },
+    { id: "sp_27", name: "城堡主樓－麻瓜研究教室", x: 36, y: 70, desc: "探索非魔法世界器物與文化的趣味教室。", photos: [] },
+    { id: "sp_28", name: "城堡主樓－古代神秘文字教室", x: 62, y: 32, desc: "解讀古老盧恩符文與魔法銘文的靜謐空間。", photos: [] },
+    { id: "sp_29", name: "城堡主樓－地窖", x: 34, y: 82, desc: "清涼幽深、迴盪著腳步聲的城堡地下石廊。", photos: [] },
+    { id: "sp_30", name: "城堡主樓－溫室", x: 24, y: 66, desc: "城堡外側培育奇異魔法草藥的玻璃溫室。", photos: [] },
+    { id: "sp_31", name: "活米村－街道", x: 47, y: 86, desc: "白雪覆蓋屋頂、呈現 Y 字形分岔的純巫師村落主街道。", photos: [] },
+    { id: "sp_34", name: "活米村－泥腳夫人茶館", x: 44, y: 16, desc: "粉嫩蕾絲與花香圍繞的浪漫約會茶館。", photos: [] },
+    { id: "sp_36", name: "活米村－高級巫師服飾", x: 42, y: 27, desc: "陳列著各色奇趣長襪與華麗巫師禮服的服飾店。", photos: [] },
+    { id: "sp_39", name: "活米村－尖叫屋", x: 22, y: 34, desc: "村落最左側孤立山丘上被木板封窗的神祕老屋。", photos: [] },
+    { id: "sp_41", name: "活米村－格爾丁宅", x: 35, y: 39, desc: "典雅莊重、蘊藏家族故事的巫師宅邸。", photos: [] },
+    { id: "sp_32", name: "活米村－三根掃帚", x: 40, y: 50, desc: "來一杯熱騰騰奶油啤酒、充滿歡笑的經典酒館。", photos: [] },
+    { id: "sp_37", name: "活米村－蜂蜜公爵糖果店", x: 38, y: 61, desc: "巧克力蛙與柏蒂全口味豆香氣四溢的糖果王國。", photos: [] },
+    { id: "sp_35", name: "活米村－桑柯的惡作劇商店", x: 34, y: 73, desc: "擺滿糞彈與打嗝糖果的歡樂惡作劇天堂。", photos: [] },
+    { id: "sp_33", name: "活米村－豬頭酒吧", x: 58, y: 20, desc: "低調而神秘、適合秘密聚會的老牌小酒館。", photos: [] },
+    { id: "sp_62", name: "活米村－安德烈美味工坊", x: 55, y: 32, desc: "香氣四溢、擺滿魔法點心與佳餚的精緻工坊。", photos: [] },
+    { id: "sp_63", name: "活米村－爪爪玩具店", x: 53, y: 44, desc: "陳列著會自己跑跳的發條奇獸與魔法玩具店。", photos: [] },
+    { id: "sp_64", name: "活米村－寫字人羽毛筆店", x: 54, y: 56, desc: "擺滿鳳凰羽、鷹羽筆與各色魔法墨水的文具店。", photos: [] },
+    { id: "sp_38", name: "活米村－郵局", x: 56, y: 68, desc: "數百隻貓頭鷹整齊排隊、傳遞魔法信件的郵局。", photos: [] },
+    { id: "sp_40", name: "活米村－瘋狂的藤蔓", x: 64, y: 80, desc: "纏繞著山壁古石與魔法氣息的奇幻藤蔓秘境。", photos: [] },
+    { id: "sp_65", name: "夜行巷－波金與伯克斯商店", x: 50, y: 46, desc: "夜行巷深處幽暗神秘、陳列著黑魔法古董與消失櫥櫃的古老店鋪。", photos: [] },
+    { id: "sp_42", name: "斜角巷－古靈閣", x: 54, y: 24, desc: "街道盡頭雪白大理石高聳建築與妖精守護的銀行。", photos: [] },
+    { id: "sp_43", name: "斜角巷－摩金夫人各式長袍店", x: 42, y: 64, desc: "左側商店街量身訂製霍格華茲制服與長袍的名店。", photos: [] },
+    { id: "sp_44", name: "斜角巷－奧利凡德魔杖商店", x: 60, y: 54, desc: "右側商店街堆滿數千個狹長魔杖盒的古老店鋪。", photos: [] },
+    { id: "sp_45", name: "斜角巷－衛式巫術法寶店", x: 44, y: 38, desc: "左側街口色彩繽紛、充滿奇思妙想的法寶店。", photos: [] },
+    { id: "sp_46", name: "斜角巷－咿啦貓頭鷹商場", x: 60, y: 38, desc: "右側商店街各種雪鴞與倉鴞眨著大眼睛的商場。", photos: [] },
+    { id: "sp_47", name: "斜角巷－優質魁地奇用品商店", x: 64, y: 70, desc: "展示最新款飛天掃帚與金探子的熱血櫥窗。", photos: [] },
+    { id: "sp_48", name: "黑湖－深淵", x: 78, y: 74, desc: "右下角最深邃、水下高塔暗影籠罩的湖底深淵。", photos: [] },
+    { id: "sp_49", name: "黑湖－淺水區", x: 30, y: 36, desc: "左上靠近岸邊、波光粼粼且能看見礁石的淺灘。", photos: [] },
+    { id: "sp_50", name: "黑湖－深水區", x: 54, y: 48, desc: "中央水域人魚村落與巨烏賊棲息的湛藍領域。", photos: [] },
+    { id: "sp_51", name: "黑湖－湖底", x: 56, y: 76, desc: "中下方水草與沉船遺蹟交織的靜謐湖底世界。", photos: [] },
+    { id: "sp_52", name: "魔法部－正廳", x: 64, y: 34, desc: "金色噴泉與飛天紙鶴穿梭的地下魔法政府大廳。", photos: [] },
+    { id: "sp_53", name: "魔法部－正氣師辦公室", x: 64, y: 58, desc: "守護魔法界和平、佈滿案件線索的正氣師總部。", photos: [] },
+    { id: "sp_54", name: "巫師收藏室 (五級以上)", x: 24, y: 36, desc: "陳列著珍稀典藏與榮耀徽章的高階巫師收藏殿堂。", photos: [] },
+    { id: "sp_55", name: "巫師收藏室 (五級以下)", x: 24, y: 64, desc: "記錄著初入魔法世界點滴珍藏的專屬空間。", photos: [] },
+    { id: "sp_56", name: "巫師友隊", x: 50, y: 30, desc: "與志同道合的夥伴並肩集結的隊伍據點。", photos: [] },
+    { id: "sp_57", name: "巫師空間", x: 50, y: 50, desc: "自由佈置家具與展示回憶的個人魔法小天地。", photos: [] },
+    { id: "sp_58", name: "奇獸空間", x: 50, y: 70, desc: "與可愛奇獸們親密互動、餵食與合影的療癒樂園。", photos: [] },
+    { id: "sp_59", name: "沙漠調查集結處", x: 76, y: 30, desc: "踏上大漠冒險前整裝待發的沙地營帳。", photos: [] },
+    { id: "sp_60", name: "自定義決鬥場", x: 76, y: 50, desc: "切磋魔咒技巧與展現華麗走位的專屬決鬥舞台。", photos: [] },
+    { id: "sp_61", name: "沙漠調查", x: 76, y: 70, desc: "廣袤沙海與古老遺跡交織的神秘調查區域。", photos: [] }
+  ]
+};
+
+const StorageAdapter = {
+  db: null,
+  isCloud() { return Boolean(window.FB && window.FB.db); },
+  initLocal() {
+    return new Promise((res, rej) => {
+      const req = indexedDB.open("MagicAlbumDB_v5", 1);
+      req.onupgradeneeded = (e) => { if (!e.target.result.objectStoreNames.contains("album")) e.target.result.createObjectStore("album"); };
+      req.onsuccess = (e) => { this.db = e.target.result; res(); };
+      req.onerror = rej;
+    });
+  },
+  async load() {
+    const badge = document.getElementById("storageBadge");
+    if (this.isCloud()) {
+      try {
+        const snap = await window.FB.getDoc(window.FB.doc(window.FB.db, "album", "root"));
+        if (badge) badge.textContent = "雲端同步模式（Firestore + Cloudinary）";
+        if (snap.exists()) {
+          await this.saveLocal(snap.data());
+          return snap.data();
+        } else {
+          const d = JSON.parse(JSON.stringify(DEFAULT_DATA));
+          await this.save(d);
+          return d;
+        }
+      } catch (err) {
+        console.error("雲端讀取失敗，改用本機備援：", err);
+        if (badge) badge.textContent = "離線備援模式（IndexedDB）";
+      }
+    } else if (badge) {
+      badge.textContent = "本機儲存模式（IndexedDB）";
+    }
+    return this.loadLocal();
+  },
+  async save(data) {
+    await this.saveLocal(data);
+    if (this.isCloud()) {
+      await window.FB.setDoc(window.FB.doc(window.FB.db, "album", "root"), data);
+    }
+  },
+  async uploadDataUrl(dataUrl, folder = "photos") {
+    const cfg = window.CLOUDINARY_CONFIG;
+    if (!cfg || !cfg.cloudName || !cfg.uploadPreset || !dataUrl.startsWith("data:")) {
+      return dataUrl;
+    }
+    const formData = new FormData();
+    formData.append("file", dataUrl);
+    formData.append("upload_preset", cfg.uploadPreset);
+    formData.append("folder", `magic-album/${folder}`);
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cfg.cloudName}/image/upload`, {
+      method: "POST",
+      body: formData
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error("Cloudinary 上傳失敗：" + errText);
+    }
+    const json = await res.json();
+    return json.secure_url;
+  },
+  async loadLocal() {
+    if (!this.db) await this.initLocal();
+    return new Promise((res) => {
+      const req = this.db.transaction("album", "readonly").objectStore("album").get("root");
+      req.onsuccess = () => res(req.result || JSON.parse(JSON.stringify(DEFAULT_DATA)));
+      req.onerror = () => res(JSON.parse(JSON.stringify(DEFAULT_DATA)));
+    });
+  },
+  async saveLocal(data) {
+    if (!this.db) await this.initLocal();
+    return new Promise((res, rej) => {
+      const req = this.db.transaction("album", "readwrite").objectStore("album").put(data, "root");
+      req.onsuccess = () => res();
+      req.onerror = rej;
+    });
+  }
+};
+const HOUSES = [
+  { id: "ravenclaw", name: "雷文克勞", en: "Ravenclaw", c: "#2b549e", c2: "#1d3d7a", t: "#ffffff" },
+  { id: "gryffindor", name: "葛萊芬多", en: "Gryffindor", c: "#9c282b", c2: "#7a1c1f", t: "#ffe7a3" },
+  { id: "slytherin", name: "史萊哲林", en: "Slytherin", c: "#1e6b43", c2: "#144f30", t: "#e8fff0" },
+  { id: "hufflepuff", name: "赫夫帕夫", en: "Hufflepuff", c: "#d9a528", c2: "#8f680c", t: "#1d1604" }
+];
+
+const app = {
+data: null, isAdmin: false, activeHouse: null, activeSpotId: null, tempPhotos: [], tempPortrait: "",  async init() {
+    this.data = await StorageAdapter.load();
+    if (sessionStorage.getItem("magic_admin") === "1") this.setAdmin(true);
+    if (this.data.spots && this.data.spots.length) this.activeSpotId = this.data.spots.at(0).id;
+    document.querySelectorAll("nav button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const t = btn.dataset.p;
+        document.querySelectorAll("nav button").forEach((b) => b.setAttribute("aria-selected", b === btn));
+        document.querySelectorAll(".page").forEach((p) => p.classList.toggle("on", p.id === t));
+      });
+    });
+    this.renderAll();
+  },
+  promptLogin() {
+    const pwd = prompt("請輸入站長管理密碼：");
+    if (pwd === ADMIN_PASSCODE) { this.setAdmin(true); sessionStorage.setItem("magic_admin", "1"); }
+    else if (pwd !== null) alert("密碼錯誤！");
+  },
+  logout() { this.setAdmin(false); sessionStorage.removeItem("magic_admin"); },
+  setAdmin(f) { this.isAdmin = f; document.body.classList.toggle("is-admin", f); document.getElementById("adminLoginBtn").style.display = f ? "none" : "inline-block"; },
+  async persist() { await StorageAdapter.save(this.data); this.renderAll(); },
+  renderAll() { this.renderEvents(); this.renderHouses(); this.renderWizards(); this.renderMap(); },
+  renderEvents() {
+    const el = document.getElementById("eventList");
+    if (!this.data.events.length) { el.innerHTML = `<p style="text-align:center;color:var(--muted)">尚無活動紀錄，點擊上方按鈕新增吧！</p>`; return; }
+    el.innerHTML = this.data.events.map((ev, i) => `
+      <article class="event">
+        <div class="event-head">
+          <div><h3>${this.esc(ev.title)}</h3><div class="date">${this.formatDate(ev.date)}</div></div>
+          <div class="admin-only" style="gap:6px"><button class="btn btn-sm" onclick="app.openEventModal('${ev.id}')">編輯</button><button class="btn btn-sm btn-danger" onclick="app.deleteEvent('${ev.id}')">刪除</button></div>
+        </div>
+        <p>${this.esc(ev.desc)}</p>
+        <div class="snap">${(ev.photos || []).map((p, j) => `<figure class="pol" onclick="app.openEventLightbox(${i},${j})">${p.url ? `<img src="${p.url}" loading="lazy">` : `<div class="ph" style="--h:${p.hue || 250}">Memory #${j + 1}<br><small>(待上傳實拍)</small></div>`}<figcaption>${this.esc(p.caption || ev.date)}</figcaption></figure>`).join("")}</div>
+      </article>`).join("");
+  },
+  openEventLightbox(i, j) {
+    const ev = this.data.events.at(i);
+    if (!ev || !ev.photos.length) return;
+    lb.open(ev.photos.map((p, k) => ({ url: p.url || this.makePh(p.hue || 250, ev.title, p.caption || `照片 ${k + 1}`), title: ev.title, sub: `${this.formatDate(ev.date)}${p.caption ? " ・ " + p.caption : ""}` })), j);
+  },
+  openEventModal(id = null) {
+    const ev = id ? this.data.events.find((e) => e.id === id) : null;
+    this.tempPhotos = ev ? JSON.parse(JSON.stringify(ev.photos)) : [];
+    this.showModal(`<h3>${ev ? "編輯活動紀錄" : "新增活動紀錄"}</h3>
+      <div class="field"><label>活動主題</label><input type="text" id="fEvTitle" value="${ev ? this.esc(ev.title) : ""}"></div>
+      <div class="field"><label>活動日期</label><input type="text" id="fEvDate" value="${ev ? this.esc(ev.date) : new Date().toISOString().slice(0, 10)}"></div>
+      <div class="field"><label>活動文字紀錄</label><textarea id="fEvDesc">${ev ? this.esc(ev.desc) : ""}</textarea></div>
+      <div class="field"><label>上傳團拍照片（最多 10 張，自動壓縮）</label><input type="file" accept="image/*" multiple onchange="app.uploadPhotos(event,10)"><div class="preview-grid" id="modalPhotoGrid"></div></div>
+      <div class="modal-footer"><button type="button" class="btn btn-ghost" onclick="app.closeModal()">取消</button><button type="button" class="btn" onclick="app.saveEvent('${id || ""}')">儲存</button></div>`);
+    this.renderModalGrid();
+  },
+  async saveEvent(id) {
+    const title = document.getElementById("fEvTitle").value.trim();
+    if (!title) return alert("請填寫活動主題！");
+    const obj = { title, date: document.getElementById("fEvDate").value.trim(), desc: document.getElementById("fEvDesc").value.trim(), photos: this.tempPhotos };
+    if (id) Object.assign(this.data.events.find((e) => e.id === id), obj);
+    else this.data.events.unshift({ id: "ev_" + Date.now(), ...obj });
+    this.closeModal(); await this.persist();
+  },
+  async deleteEvent(id) { if (confirm("確定刪除此活動？")) { this.data.events = this.data.events.filter((e) => e.id !== id); await this.persist(); } },
+toggleHouse(id) {
+    this.activeHouse = this.activeHouse === id ? null : id;
+    this.renderHouses();
+    this.renderWizards();
+  },
+  renderHouses() {
+    document.getElementById("houseTabs").innerHTML = HOUSES.map((h) => `<button type="button" style="--c:${h.c};--t:${h.t}" aria-pressed="${this.activeHouse === h.id}" onclick="app.toggleHouse('${h.id}')">${h.name} <span class="fell" style="font-size:13px">${h.en}</span></button>`).join("");
+  },
+  renderWizards() {
+    const h = this.activeHouse ? HOUSES.find((x) => x.id === this.activeHouse) : null;
+    const list = this.activeHouse ? this.data.wizards.filter((w) => w.house === this.activeHouse) : this.data.wizards;
+    const el = document.getElementById("wizardCards");
+    if (!list.length) {
+      const label = h ? `「${h.name}」` : "巫師檔案";
+      el.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--muted)">目前${label}尚無巫師檔案。</p>`;
+      return;
+    }
+    el.innerHTML = list.map((w) => {
+      const p0 = (w.photos || []).at(0) || { url: "", hue: (w.hue || 230) + 20 };
+      const p1 = (w.photos || []).at(1) || { url: "", hue: (w.hue || 230) + 40 };
+const cardHouse = h || HOUSES.find((x) => x.id === w.house) || HOUSES.at(0);
+      return `<article class="card" data-wz-id="${w.id}" draggable="${this.isAdmin}" style="--c:${cardHouse.c};--c2:${cardHouse.c2}">
+        ${w.portrait ? `<img class="card-portrait" src="${w.portrait}" onclick="app.openWizardLightbox('${w.id}',0)">` : `<div class="ph card-portrait" style="--h:${w.hue || 230}" onclick="app.openWizardLightbox('${w.id}',0)">Half-Body Portrait<br><small>(半身照待上傳)</small></div>`}
+        <h4>${this.esc(w.name)}</h4><div class="hn">${cardHouse.name} ・ ${cardHouse.en}</div><div class="ttl">「${this.esc(w.title || "見習巫師")}」</div>
+        <div class="mini">
+          ${p0.url ? `<img src="${p0.url}" onclick="app.openWizardLightbox('${w.id}',1)">` : `<div class="ph" style="--h:${p0.hue}" onclick="app.openWizardLightbox('${w.id}',1)">Snap 1</div>`}
+          ${p1.url ? `<img src="${p1.url}" onclick="app.openWizardLightbox('${w.id}',2)">` : `<div class="ph" style="--h:${p1.hue}" onclick="app.openWizardLightbox('${w.id}',2)">Snap 2</div>`}
+        </div>
+        <div class="card-actions admin-only"><button class="btn btn-sm" style="flex:1;justify-content:center" onclick="app.openWizardModal('${w.id}')">編輯</button><button class="btn btn-sm btn-danger" onclick="app.deleteWizard('${w.id}')">刪除</button></div>
+      </article>`;
+    }).join("");
+    if (this.isAdmin) this.bindWizardDrag();
+  },
+  dragWizardId: null,
+  bindWizardDrag() {
+    const cards = document.querySelectorAll("#wizardCards .card");
+    cards.forEach((card) => {
+      card.addEventListener("dragstart", (e) => {
+        if (e.target.closest("button,img,.ph")) { e.preventDefault(); return; }
+        this.dragWizardId = card.dataset.wzId;
+        card.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+      });
+      card.addEventListener("dragend", () => {
+        this.dragWizardId = null;
+        cards.forEach((c) => c.classList.remove("dragging", "drag-over"));
+      });
+      card.addEventListener("dragover", (e) => {
+        if (!this.dragWizardId || card.dataset.wzId === this.dragWizardId) return;
+        e.preventDefault();
+        card.classList.add("drag-over");
+      });
+      card.addEventListener("dragleave", () => card.classList.remove("drag-over"));
+      card.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        card.classList.remove("drag-over");
+        const targetId = card.dataset.wzId;
+        if (!this.dragWizardId || this.dragWizardId === targetId) return;
+        const arr = this.data.wizards;
+        const fromIdx = arr.findIndex((x) => x.id === this.dragWizardId);
+        const toIdx = arr.findIndex((x) => x.id === targetId);
+        if (fromIdx === -1 || toIdx === -1) return;
+        const [moved] = arr.splice(fromIdx, 1);
+        arr.splice(toIdx, 0, moved);
+        this.dragWizardId = null;
+        await this.persist();
+      });
+    });
+  },
+  openWizardLightbox(id, idx) {
+    const w = this.data.wizards.find((x) => x.id === id);
+    if (!w) return;
+    const h = HOUSES.find((x) => x.id === w.house) || HOUSES.at(0);
+    lb.open([{ url: w.portrait || this.makePh(w.hue || 230, w.name, "主要半身照"), title: `${w.name}（${h.name}）`, sub: `稱號：${w.title}` }, ...(w.photos || []).map((p, i) => ({ url: p.url || this.makePh(p.hue || 240, w.name, `留影 #${i + 1}`), title: `${w.name}（${h.name}）`, sub: p.caption || `遊戲內留影 #${i + 1}` }))], idx);
+  },
+  openWizardModal(id = null) {
+    const w = id ? this.data.wizards.find((x) => x.id === id) : null;
+    this.tempPortrait = w ? w.portrait : "";
+    this.tempPhotos = w ? JSON.parse(JSON.stringify(w.photos || [])) : [];
+    const opts = HOUSES.map((h) => `<option value="${h.id}" ${(w ? w.house : this.activeHouse) === h.id ? "selected" : ""}>${h.name}</option>`).join("");
+    this.showModal(`<h3>${w ? "編輯巫師檔案" : "新增巫師檔案"}</h3>
+      <div class="field-row"><div class="field"><label>巫師名稱</label><input type="text" id="fWzName" value="${w ? this.esc(w.name) : ""}"></div><div class="field"><label>所屬學院</label><select id="fWzHouse">${opts}</select></div></div>
+      <div class="field"><label>專屬稱號</label><input type="text" id="fWzTitle" value="${w ? this.esc(w.title) : ""}"></div>
+      <div class="field"><label>主要半身照（1 張）</label><input type="file" accept="image/*" onchange="app.uploadPortrait(event)"><div id="portraitPreview" style="margin-top:8px">${this.tempPortrait ? `<img src="${this.tempPortrait}" style="height:100px;border-radius:4px">` : `<small style="color:var(--muted)">尚未上傳</small>`}</div></div>
+      <div class="field"><label>遊戲內寫真照片（最多 2 張）</label><input type="file" accept="image/*" multiple onchange="app.uploadPhotos(event,2)"><div class="preview-grid" id="modalPhotoGrid"></div></div>
+      <div class="modal-footer"><button type="button" class="btn btn-ghost" onclick="app.closeModal()">取消</button><button type="button" class="btn" onclick="app.saveWizard('${id || ""}')">儲存</button></div>`);
+    this.renderModalGrid();
+  },
+async uploadPortrait(e) {
+    const f = e.target.files && e.target.files.item(0);
+    if (!f) return;
+    const prev = document.getElementById("portraitPreview");
+    prev.innerHTML = `<small style="color:var(--gold)">✦ 正在上傳至 Cloudinary...</small>`;
+    const compressed = await compressImage(f, 1000, 0.85);
+    this.tempPortrait = await StorageAdapter.uploadDataUrl(compressed, "portraits");
+    prev.innerHTML = `<img src="${this.tempPortrait}" style="height:100px;border-radius:4px">`;
+  },
+  async saveWizard(id) {
+    const name = document.getElementById("fWzName").value.trim();
+    if (!name) return alert("請輸入巫師名稱！");
+    const house = document.getElementById("fWzHouse").value;
+    const obj = { name, house, title: document.getElementById("fWzTitle").value.trim(), portrait: this.tempPortrait, photos: this.tempPhotos };
+    if (id) Object.assign(this.data.wizards.find((w) => w.id === id), obj);
+    else this.data.wizards.push({ id: "wz_" + Date.now(), hue: Math.floor(Math.random() * 360), ...obj });
+    this.activeHouse = house; this.closeModal(); await this.persist();
+  },
+  async deleteWizard(id) { if (confirm("確定刪除此巫師檔案？")) { this.data.wizards = this.data.wizards.filter((w) => w.id !== id); await this.persist(); } },
+  activeRegion: "霍格華茲",
+  getRegionSvg(region) {
+    const baseFrame = `
+      <defs>
+        <radialGradient id="gGlow" cx="50%" cy="48%" r="48%"><stop offset="0%" stop-color="#e6c27a" stop-opacity="0.22"/><stop offset="65%" stop-color="#8a6eff" stop-opacity="0.08"/><stop offset="100%" stop-color="#0b0820" stop-opacity="0"/></radialGradient>
+        <linearGradient id="wGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#282275" stop-opacity="0.55"/><stop offset="100%" stop-color="#0b0822" stop-opacity="0.96"/></linearGradient>
+      </defs>
+      <rect x="20" y="16" width="760" height="518" rx="6" fill="none" stroke="#e6c27a" stroke-opacity="0.35" stroke-width="1.2"/>
+      <rect x="26" y="22" width="748" height="506" rx="4" fill="none" stroke="#e6c27a" stroke-opacity="0.18" stroke-width="0.8" stroke-dasharray="6 4"/>
+      <circle cx="400" cy="260" r="260" fill="url(#gGlow)"/>
+      <g transform="translate(76,68)" stroke="#e6c27a" stroke-opacity="0.5" fill="none">
+        <circle r="20" stroke-width="0.8"/><path d="M0 -25 L3 -5 L23 0 L3 5 L0 25 L-3 5 L-23 0 L-3 -5 Z" fill="#e6c27a" fill-opacity="0.15"/>
+        <text x="0" y="-28" text-anchor="middle" fill="#e6c27a" font-size="9" font-family="IM Fell English,serif">N</text>
+      </g>`;
+
+    const scenes = {
+      "霍格華茲": `
+        <path d="M180 490 Q240 410 310 355" stroke="#e6c27a" stroke-width="10" stroke-opacity="0.45" fill="none"/>
+        <path d="M180 490 Q240 410 310 355" stroke="#181344" stroke-width="6" fill="none"/>
+        <g stroke="#e6c27a" stroke-opacity="0.32" fill="none">
+          <path d="M620 360 l-10 20 h20 z M655 375 l-12 24 h24 z M685 350 l-10 20 h20 z M640 420 l-11 22 h22 z"/>
+          <path d="M240 105 Q320 85 400 100 Q480 85 560 105" stroke-dasharray="4 4"/>
+        </g>
+        <g stroke="#e6c27a" stroke-width="1.4" fill="#181344" fill-opacity="0.92">
+          <path d="M260 340 Q400 315 540 340 L525 370 Q400 350 275 370 Z" fill="#110d33"/>
+          <rect x="372" y="165" width="56" height="175"/><polygon points="366,165 400,98 434,165"/>
+          <rect x="295" y="235" width="77" height="105"/><polygon points="290,235 333,185 377,235"/>
+          <rect x="428" y="245" width="92" height="95"/><polygon points="424,245 474,195 524,245"/>
+          <g fill="#ffe099" stroke="none" opacity="0.85"><rect x="396" y="190" width="8" height="20" rx="3"/><rect x="455" y="275" width="8" height="18" rx="3"/><rect x="480" y="275" width="8" height="18" rx="3"/><rect x="320" y="265" width="7" height="16" rx="3"/></g>
+        </g>
+        <g stroke="#e6c27a" stroke-width="1.3" fill="#1b154a"><rect x="572" y="392" width="44" height="32"/><polygon points="567,392 594,368 621,392"/><circle cx="630" cy="420" r="7" stroke-opacity="0.6"/></g>`,
+
+      "城堡主樓": `
+        <g stroke="#e6c27a" stroke-width="1.4" fill="#161140" fill-opacity="0.9">
+          <path d="M365 55 L415 55 L455 110 L565 110 L615 260 L660 285 L660 340 L575 340 L545 495 L255 495 L285 260 L335 110 Z"/>
+          <line x1="335" y1="145" x2="555" y2="145" stroke-opacity="0.4"/><line x1="310" y1="215" x2="585" y2="215" stroke-opacity="0.4"/>
+          <line x1="285" y1="285" x2="660" y2="285" stroke-opacity="0.45"/><line x1="275" y1="355" x2="570" y2="355" stroke-opacity="0.55" stroke-width="1.6"/>
+          <line x1="265" y1="425" x2="555" y2="425" stroke-opacity="0.45"/>
+          <path d="M380 145 L440 215 M440 215 L370 285 M370 285 L450 355 M450 355 L380 425" stroke-opacity="0.75" stroke-width="1.6" stroke-dasharray="4 3"/>
+        </g>
+        <g stroke="#e6c27a" stroke-width="1.2" fill="#181344"><rect x="155" y="345" width="75" height="42" rx="6"/><polygon points="155,345 192,325 230,345"/></g>`,
+
+      "活米村": `
+        <path d="M365 495 L380 315 L315 140 M380 315 L445 120" stroke="#e6c27a" stroke-opacity="0.55" stroke-width="18" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M365 495 L380 315 L315 140 M380 315 L445 120" stroke="#181344" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <g stroke="#e6c27a" stroke-width="1.2" fill="#1b154a">
+          <rect x="135" y="165" width="54" height="44"/><polygon points="130,165 162,135 194,165"/>
+          <rect x="330" y="75" width="46" height="34"/><polygon points="326,75 353,55 380,75"/>
+          <rect x="315" y="130" width="48" height="36"/><polygon points="310,130 339,110 368,130"/>
+          <rect x="255" y="195" width="52" height="38"/><polygon points="250,195 281,172 312,195"/>
+          <rect x="295" y="255" width="54" height="40"/><polygon points="290,255 322,232 354,255"/>
+          <rect x="280" y="315" width="54" height="40"/><polygon points="275,315 307,292 339,315"/>
+          <rect x="245" y="380" width="54" height="40"/><polygon points="240,380 272,358 304,380"/>
+          <rect x="445" y="95" width="50" height="38"/><polygon points="440,95 470,74 500,95"/>
+          <rect x="420" y="160" width="52" height="38"/><polygon points="415,160 446,138 477,160"/>
+          <rect x="405" y="225" width="52" height="38"/><polygon points="400,225 431,204 462,225"/>
+          <rect x="415" y="290" width="52" height="38"/><polygon points="410,290 441,268 472,290"/>
+          <rect x="430" y="355" width="54" height="40"/><polygon points="425,355 457,332 489,355"/>
+        </g>
+        <path d="M490 435 Q525 400 560 440 T610 415" stroke="#e6c27a" stroke-opacity="0.55" stroke-width="1.6" fill="none"/>`,
+
+      "夜行巷": `
+        <path d="M355 495 L385 170 L415 170 L445 495 Z" fill="#100c2e" stroke="#e6c27a" stroke-opacity="0.4"/>
+        <g stroke="#e6c27a" stroke-width="1.2" fill="#15103b">
+          <polygon points="180,495 200,130 355,165 340,495"/>
+          <polygon points="620,495 600,130 445,165 460,495"/>
+          <rect x="335" y="210" width="130" height="110" fill="#1c154d"/><polygon points="325,210 400,160 475,210"/>
+          <path d="M380 320 L380 265 Q400 245 420 265 L420 320 Z" fill="#0d0a26"/>
+          <circle cx="360" cy="255" r="10" fill="#ffe099" fill-opacity="0.25"/><circle cx="440" cy="255" r="10" fill="#ffe099" fill-opacity="0.25"/>
+        </g>`,
+
+      "斜角巷": `
+        <path d="M365 495 C375 380, 415 310, 405 220 C400 180, 420 155, 435 140" stroke="#e6c27a" stroke-opacity="0.5" stroke-width="24" fill="none" stroke-linecap="round"/>
+        <path d="M365 495 C375 380, 415 310, 405 220 C400 180, 420 155, 435 140" stroke="#14103a" stroke-width="18" fill="none" stroke-linecap="round"/>
+        <g stroke="#e6c27a" stroke-width="1.3" fill="#1b154a">
+          <rect x="375" y="85" width="120" height="62"/><polygon points="365,85 435,45 505,85"/>
+          <line x1="395" y1="85" x2="395" y2="147"/><line x1="422" y1="85" x2="422" y2="147"/><line x1="448" y1="85" x2="448" y2="147"/><line x1="475" y1="85" x2="475" y2="147"/>
+          <rect x="295" y="185" width="85" height="58"/><polygon points="290,185 337,158 385,185"/>
+          <rect x="445" y="185" width="85" height="58"/><polygon points="440,185 487,158 535,185"/>
+          <rect x="280" y="325" width="85" height="58"/><polygon points="275,325 322,298 370,325"/>
+          <rect x="445" y="275" width="85" height="58"/><polygon points="440,275 487,248 535,275"/>
+          <rect x="465" y="365" width="90" height="58"/><polygon points="460,365 510,338 560,365"/>
+        </g>`,
+
+      "黑湖": `
+        <path d="M90 120 Q280 95 480 125 T730 160 L740 495 L80 495 Z" fill="url(#wGrad)" stroke="#e6c27a" stroke-opacity="0.35"/>
+        <g stroke="#e6c27a" stroke-opacity="0.4" fill="none">
+          <path d="M130 195 Q240 175 350 205" stroke-width="1.3"/>
+          <path d="M320 275 Q440 255 560 285" stroke-dasharray="5 5"/>
+          <path d="M380 430 Q370 385 385 350 M420 435 Q435 390 415 355 M490 430 Q480 390 495 360" stroke-width="1.4"/>
+        </g>
+        <g stroke="#e6c27a" stroke-width="1.3" fill="#110d33">
+          <rect x="595" y="345" width="55" height="95"/><polygon points="590,345 622,300 655,345"/>
+          <rect x="650" y="370" width="38" height="70"/><polygon points="646,370 669,335 692,370"/>
+        </g>`,
+
+      "魔法部": `
+        <g stroke="#e6c27a" stroke-width="1.1" fill="#171242" stroke-opacity="0.65">
+          <rect x="115" y="145" width="120" height="145"/><polygon points="110,145 175,105 240,145"/>
+          <rect x="255" y="185" width="42" height="190"/><polygon points="252,185 276,145 300,185"/><circle cx="276" cy="208" r="10"/>
+          <path d="M297 325 Q375 305 445 325 L445 355 Q375 335 297 355 Z"/>
+        </g>
+        <g stroke="#e6c27a" stroke-width="1.4" fill="#1b154a">
+          <rect x="445" y="120" width="145" height="340" rx="4"/>
+          <line x1="445" y1="245" x2="590" y2="245" stroke-opacity="0.6"/>
+          <line x1="445" y1="365" x2="590" y2="365" stroke-opacity="0.6"/>
+          <circle cx="517" cy="185" r="20" fill="none" stroke="#ffe099"/><path d="M495 215 Q517 200 540 215" fill="none"/>
+          <line x1="470" y1="295" x2="565" y2="295" stroke-opacity="0.45"/><line x1="470" y1="320" x2="565" y2="320" stroke-opacity="0.45"/>
+        </g>`,
+
+      "其他秘境": `
+        <g stroke="#e6c27a" stroke-width="1.2" fill="#181344" fill-opacity="0.88">
+          <rect x="105" y="110" width="175" height="350" rx="8"/><line x1="105" y1="275" x2="280" y2="275" stroke-opacity="0.45"/>
+          <rect x="312" y="110" width="176" height="350" rx="8"/><line x1="312" y1="225" x2="488" y2="225" stroke-opacity="0.4"/><line x1="312" y1="335" x2="488" y2="335" stroke-opacity="0.4"/>
+          <rect x="520" y="110" width="175" height="350" rx="8"/><line x1="520" y1="225" x2="695" y2="225" stroke-opacity="0.4"/><line x1="520" y1="335" x2="695" y2="335" stroke-opacity="0.4"/>
+        </g>`
+    };
+
+    const body = scenes[region] || scenes["霍格華茲"];
+    return `${baseFrame}${body}<text x="665" y="60" text-anchor="middle" fill="#e6c27a" fill-opacity="0.65" font-size="14" font-family="IM Fell English,serif" font-style="italic">${this.esc(region)} </text>`;
+  },
+
+  renderMap() {
+    const regions = [...new Set(this.data.spots.map((s) => s.name.includes("－") ? s.name.split("－").at(0) : "其他秘境"))];
+    if (!regions.includes(this.activeRegion)) this.activeRegion = regions.at(0) || "";
+
+    const filtered = this.data.spots.filter((s) => (s.name.includes("－") ? s.name.split("－").at(0) : "其他秘境") === this.activeRegion);
+    if (!filtered.some((s) => s.id === this.activeSpotId) && filtered.length) {
+      this.activeSpotId = filtered.at(0).id;
+    }
+
+    let tabsEl = document.getElementById("regionTabs");
+    if (!tabsEl) {
+      tabsEl = document.createElement("div");
+      tabsEl.id = "regionTabs";
+      tabsEl.className = "house";
+      tabsEl.style.marginBottom = "14px";
+      const wrap = document.querySelector("#c .scroll-wrapper");
+      wrap.parentNode.insertBefore(tabsEl, wrap);
+    }
+
+    tabsEl.innerHTML = regions.map((r) => `
+      <button type="button" style="--c:#3a2e75;--t:#e6c27a" aria-pressed="${this.activeRegion === r}" onclick="app.activeRegion='${r}';app.renderMap()">
+        ${this.esc(r)}
+      </button>
+    `).join("");
+
+    const svgEl = document.querySelector("#mapStage svg");
+    if (svgEl) svgEl.innerHTML = this.getRegionSvg(this.activeRegion);
+
+    document.getElementById("mapPins").innerHTML = filtered.map((sp) => {
+      const subName = sp.name.includes("－") ? sp.name.split("－").slice(1).join("－") : sp.name;
+      return `<button type="button" class="pin" style="left:${sp.x}%;top:${sp.y}%" aria-pressed="${this.activeSpotId === sp.id}" onclick="app.activeSpotId='${sp.id}';app.renderMap()"><i></i><span>${this.esc(subName)}</span></button>`;
+    }).join("");
+
+    const sp = this.data.spots.find((s) => s.id === this.activeSpotId) || filtered.at(0);
+    const panel = document.getElementById("spotDetail");
+    if (!sp) { panel.innerHTML = `<p style="text-align:center;color:var(--muted);margin:0">尚未建立任何地圖地點。</p>`; return; }
+    panel.innerHTML = `<div class="spot-head"><div><h3>✦ ${this.esc(sp.name)} <span class="en-name fell">${this.esc(sp.enName || "")}</span></h3></div><div class="admin-only" style="gap:6px"><button class="btn btn-sm" onclick="app.openSpotModal('${sp.id}')">編輯地點</button><button class="btn btn-sm btn-danger" onclick="app.deleteSpot('${sp.id}')">刪除</button></div></div><p class="spot-desc">${this.esc(sp.desc || "")}</p><div class="snap">${(sp.photos || []).map((p, i) => `<figure class="pol" onclick="app.openSpotLightbox('${sp.id}',${i})">${p.url ? `<img src="${p.url}" loading="lazy">` : `<div class="ph" style="--h:${p.hue || 250}">${this.esc(sp.name)}<br><small>(待上傳團拍)</small></div>`}<figcaption>${this.esc(p.date || "")} ${this.esc(p.caption || "")}</figcaption></figure>`).join("") || `<p style="color:var(--muted);font-size:14px">此地點尚無團拍照片。</p>`}</div>`;
+  },
+openSpotLightbox(id, idx) {
+    const sp = this.data.spots.find((s) => s.id === id);
+    if (!sp || !sp.photos.length) return;
+    lb.open(sp.photos.map((p, i) => ({ url: p.url || this.makePh(p.hue || 250, sp.name, p.caption || `留影 #${i + 1}`), title: sp.name, sub: `${p.date ? this.formatDate(p.date) + " ・ " : ""}${p.caption || ""}` })), idx);
+  },
+  openSpotModal(id = null) {
+    const sp = id ? this.data.spots.find((s) => s.id === id) : null;
+    this.tempPhotos = sp ? JSON.parse(JSON.stringify(sp.photos || [])) : [];
+    this.showModal(`<h3>${sp ? "編輯地圖地點" : "新增地圖地點"}</h3>
+      <div class="field"><label>地點名稱</label><input type="text" id="fSpName" value="${sp ? this.esc(sp.name) : ""}"></div>
+      <div class="field-row"><div class="field"><label>水平位置 X（5～95%）</label><input type="number" id="fSpX" min="5" max="95" value="${sp ? sp.x : 50}"></div><div class="field"><label>垂直位置 Y（5～95%）</label><input type="number" id="fSpY" min="5" max="95" value="${sp ? sp.y : 50}"></div></div>
+      <div class="field"><label>場景介紹</label><textarea id="fSpDesc">${sp ? this.esc(sp.desc) : ""}</textarea></div>
+      <div class="field"><label>該地點團拍照片（自動壓縮）</label><input type="file" accept="image/*" multiple onchange="app.uploadPhotos(event,10,true)"><div class="preview-grid" id="modalPhotoGrid"></div></div>
+      <div class="modal-footer"><button type="button" class="btn btn-ghost" onclick="app.closeModal()">取消</button><button type="button" class="btn" onclick="app.saveSpot('${id || ""}')">儲存</button></div>`);
+    this.renderModalGrid();
+  },
+  async saveSpot(id) {
+    const name = document.getElementById("fSpName").value.trim();
+    if (!name) return alert("請輸入地點名稱！");
+    const obj = { name, x: Math.min(95, Math.max(5, Number(document.getElementById("fSpX").value) || 50)), y: Math.min(95, Math.max(5, Number(document.getElementById("fSpY").value) || 50)), desc: document.getElementById("fSpDesc").value.trim(), photos: this.tempPhotos };
+    if (id) Object.assign(this.data.spots.find((s) => s.id === id), obj);
+    else { const nid = "sp_" + Date.now(); this.data.spots.push({ id: nid, ...obj }); this.activeSpotId = nid; }
+    this.closeModal(); await this.persist();
+  },
+  async deleteSpot(id) { if (confirm("確定刪除此地點？")) { this.data.spots = this.data.spots.filter((s) => s.id !== id); this.activeSpotId = this.data.spots.at(0)?.id || null; await this.persist(); } },
+
+async uploadPhotos(e, max, withDate = false) {
+    const today = new Date().toISOString().slice(0, 10);
+    const grid = document.getElementById("modalPhotoGrid");
+    if (grid) grid.insertAdjacentHTML("beforebegin", `<div id="uploadHint" style="color:var(--gold);font-size:13px;margin-top:6px">✦ 正在上傳照片至 Cloudinary，請稍候...</div>`);
+    try {
+      for (const f of Array.from(e.target.files || [])) {
+        if (this.tempPhotos.length >= max) { alert(`最多上傳 ${max} 張照片。`); break; }
+        const compressed = await compressImage(f);
+        const url = await StorageAdapter.uploadDataUrl(compressed, "photos");
+        const item = { url, hue: Math.floor(Math.random() * 360), caption: f.name.replace(/\.[^/.]+$/, "") };
+        if (withDate) item.date = today;
+        this.tempPhotos.push(item);
+        this.renderModalGrid();
+      }
+    } finally {
+      document.getElementById("uploadHint")?.remove();
+      e.target.value = "";
+    }
+  },
+  renderModalGrid() {
+    const g = document.getElementById("modalPhotoGrid");
+    if (g) g.innerHTML = this.tempPhotos.map((p, i) => `<div class="preview-item">${p.url ? `<img src="${p.url}">` : `<div class="ph" style="--h:${p.hue || 250};font-size:11px">佔位圖</div>`}<button type="button" onclick="app.tempPhotos.splice(${i},1);app.renderModalGrid()">✕</button></div>`).join("");
+  },
+  exportBackup() {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(this.data, null, 2)], { type: "application/json" }));
+    a.download = `magic-album-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+  },
+  async importBackup(e) {
+    const f = e.target.files && e.target.files.item(0);
+    if (!f) return;
+    try { const d = JSON.parse(await f.text()); if (d.events && d.wizards && d.spots) { this.data = d; await this.persist(); alert("匯入成功！"); } } catch { alert("檔案格式錯誤。"); }
+    e.target.value = "";
+  },
+  showModal(html) { document.getElementById("editorContent").innerHTML = html; document.getElementById("editorModal").classList.add("open"); },
+  closeModal() { document.getElementById("editorModal").classList.remove("open"); },
+  formatDate(s) { const m = (s || "").match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? `${m.at(1)} 年 ${Number(m.at(2))} 月 ${Number(m.at(3))} 日` : (s || ""); },
+  esc(s) { return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); },
+  makePh(hue, t, sub) {
+    const c = document.createElement("canvas"); c.width = 800; c.height = 600;
+    const ctx = c.getContext("2d"), g = ctx.createLinearGradient(0, 0, 800, 600);
+    g.addColorStop(0, `hsl(${hue},40%,45%)`); g.addColorStop(1, `hsl(${(hue + 35) % 360},45%,22%)`);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 800, 600);
+    ctx.fillStyle = "#fff6dc"; ctx.font = "bold 30px serif"; ctx.textAlign = "center"; ctx.fillText(t, 400, 285);
+    ctx.font = "italic 20px serif"; ctx.fillStyle = "rgba(255,246,220,.8)"; ctx.fillText(sub, 400, 328);
+    return c.toDataURL("image/jpeg", 0.8);
+  }
+};
+
+const mapCtrl = {
+  scale: 1, x: 0, y: 0, dragging: false, sx: 0, sy: 0,
+  init() {
+    const vp = document.getElementById("mapViewport"), st = document.getElementById("mapStage");
+    vp.addEventListener("pointerdown", (e) => { if (e.target.closest("button")) return; this.dragging = true; this.sx = e.clientX - this.x; this.sy = e.clientY - this.y; st.classList.add("dragging"); vp.setPointerCapture(e.pointerId); });
+    vp.addEventListener("pointermove", (e) => { if (!this.dragging) return; this.x = e.clientX - this.sx; this.y = e.clientY - this.sy; this.apply(); });
+    const end = () => { this.dragging = false; st.classList.remove("dragging"); };
+    vp.addEventListener("pointerup", end); vp.addEventListener("pointercancel", end);
+    vp.addEventListener("wheel", (e) => { e.preventDefault(); this.zoom(e.deltaY < 0 ? 0.2 : -0.2); }, { passive: false });
+  },
+  zoom(d) { this.scale = Math.min(2.6, Math.max(1, +(this.scale + d).toFixed(2))); if (this.scale === 1) { this.x = 0; this.y = 0; } this.apply(); },
+  reset() { this.scale = 1; this.x = 0; this.y = 0; this.apply(); },
+  apply() { document.getElementById("mapStage").style.transform = `translate(${this.x}px,${this.y}px) scale(${this.scale})`; }
+};
+
+const lb = {
+  items: [], idx: 0,
+  open(items, idx = 0) { this.items = items; this.idx = idx; this.render(); document.getElementById("lightbox").classList.add("open"); },
+  close() { document.getElementById("lightbox").classList.remove("open"); },
+  step(d) { if (this.items.length) { this.idx = (this.idx + d + this.items.length) % this.items.length; this.render(); } },
+  render() { const it = this.items.at(this.idx); if (!it) return; document.getElementById("lbImg").src = it.url; document.getElementById("lbCap").innerHTML = `<strong>${app.esc(it.title)}</strong><small>${app.esc(it.sub)}（${this.idx + 1} / ${this.items.length}）</small>`; }
+};
+
+document.addEventListener("keydown", (e) => { if (!document.getElementById("lightbox").classList.contains("open")) return; if (e.key === "Escape") lb.close(); if (e.key === "ArrowLeft") lb.step(-1); if (e.key === "ArrowRight") lb.step(1); });
+window.addEventListener("DOMContentLoaded", () => { mapCtrl.init(); app.init(); });
+</script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+  // ★ 請將下方替換成你 Firebase 專案的 firebaseConfig
+  const firebaseConfig = {
+    apiKey: "AIzaSyDBmW9JNQSk6yZqF8EL-LIyf_Z3MfJlWKk",
+    authDomain: "nnalbum-fe2f7.firebaseapp.com",
+    projectId: "nnalbum-fe2f7",
+    storageBucket: "nnalbum-fe2f7.firebasestorage.app",
+    messagingSenderId: "610438423294",
+    appId: "1:610438423294:web:9e5ca80dca31bc9e4fbbaf"
+  };
+
+window.CLOUDINARY_CONFIG = {
+    cloudName: "zidfzqpd",
+    uploadPreset: "hp_album" // 例如 magic_album
+  };
+
+  if (firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith("貼上")) {
+    const fbApp = initializeApp(firebaseConfig);
+    window.FB = {
+      db: getFirestore(fbApp),
+      doc, getDoc, setDoc
+    };
+  }
+</body>
+</html>
