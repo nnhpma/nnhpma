@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>魔法相簿～暖暖拍照小天地</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=IM+Fell+English:ital@1&family=Noto+Serif+TC:wght@400;600;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=IM+Fell+English:ital@1&family=Noto+Serif+TC:wght@400;600;900&display=swap" rel="stylesheet">
   <style>
     :root{color-scheme:dark;--bg:#0c0a22;--paper:#171244;--paper2:#201a58;--ink:#ece8ff;--muted:#b3abe6;--line:#4b3f9a;--gold:#e6c27a;--wax:#c58bff;--danger:#e05a6d;--shadow:rgba(0,0,0,.65);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
     html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -169,7 +169,7 @@
           <button type="button" onclick="mapCtrl.reset()">⟲</button>
         </div>
         <div class="map-stage" id="mapStage">
-          <svg viewBox="0 0 800 550" preserveAspectRatio="xMidYMid slice" xmlns="[http://www.w3.org/2000/svg]"
+        <svg viewBox="0 0 800 550" preserveAspectRatio="xMidYMid slice" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)">
             <defs>
               <radialGradient id="castleGlow" cx="50%" cy="42%" r="45%"><stop offset="0%" stop-color="#e6c27a" stop-opacity="0.22"/><stop offset="60%" stop-color="#8a6eff" stop-opacity="0.08"/><stop offset="100%" stop-color="#0b0820" stop-opacity="0"/></radialGradient>
               <linearGradient id="lakeGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#19164a" stop-opacity="0.85"/><stop offset="100%" stop-color="#0d0b2b" stop-opacity="0.95"/></linearGradient>
@@ -489,6 +489,18 @@ data: null, isAdmin: false, activeHouse: null, activeSpotId: null, tempPhotos: [
       title: ev.title,
       sub: `${this.formatDate(ev.date)}${p.caption ? " ・ " + p.caption : ""}`
     })), j);
+  },
+  openEventModal(id = null) {
+    const ev = id ? this.data.events.find((e) => e.id === id) : null;
+    this.tempPhotos = ev ? JSON.parse(JSON.stringify(ev.photos)) : [];
+    const dateVal = ev && ev.date ? ev.date.replace(/\//g, "-") : new Date().toISOString().slice(0, 10);
+    this.showModal(`<h3>${ev ? "編輯活動紀錄" : "新增活動紀錄"}</h3>
+      <div class="field"><label>活動主題</label><input type="text" id="fEvTitle" value="${ev ? this.esc(ev.title) : ""}"></div>
+      <div class="field"><label>活動日期</label><input type="date" id="fEvDate" value="${this.esc(dateVal)}"></div>
+      <div class="field"><label>活動文字紀錄</label><textarea id="fEvDesc">${ev ? this.esc(ev.desc) : ""}</textarea></div>
+      <div class="field"><label>上傳團拍照片（最多 10 張，自動壓縮）</label><input type="file" accept="image/*" multiple onchange="app.uploadPhotos(event,10)"><div class="preview-grid" id="modalPhotoGrid"></div></div>
+      <div class="modal-footer"><button type="button" class="btn btn-ghost" onclick="app.closeModal()">取消</button><button type="button" class="btn" onclick="app.saveEvent('${id || ""}')">儲存</button></div>`);
+    this.renderModalGrid();
   },
   async saveEvent(id) {
     const title = document.getElementById("fEvTitle").value.trim();
