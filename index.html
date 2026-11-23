@@ -682,7 +682,7 @@ async uploadPortrait(e) {
       if (grid) grid.insertAdjacentHTML("beforebegin", `<div id="uploadHint" style="color:var(--gold);font-size:13px;margin-top:6px">✦ 正在上傳至 Cloudinary...</div>`);
       try {
         const url = await StorageAdapter.uploadDataUrl(croppedDataUrl, "photos");
-        this.tempPhotos.push({ url, hue: Math.floor(Math.random() * 360), caption: f.name.replace(/\.[^/.]+$/, "") });
+        this.tempPhotos.push({ url, hue: Math.floor(Math.random() * 360), caption: "" });
         this.renderModalGrid();
       } finally {
         document.getElementById("uploadHint")?.remove();
@@ -894,7 +894,7 @@ async uploadPhotos(e, max, withDate = false) {
         if (this.tempPhotos.length >= max) { alert(`最多上傳 ${max} 張照片。`); break; }
         const compressed = await compressImage(f);
         const url = await StorageAdapter.uploadDataUrl(compressed, "photos");
-        const item = { url, hue: Math.floor(Math.random() * 360), caption: f.name.replace(/\.[^/.]+$/, "") };
+        const item = { url, hue: Math.floor(Math.random() * 360), caption: "" };
         if (withDate) item.date = today;
         this.tempPhotos.push(item);
         this.renderModalGrid();
