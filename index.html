@@ -117,8 +117,12 @@
 .crop-frame{position:absolute;border:2px solid var(--gold);box-shadow:0 0 0 9999px rgba(8,6,26,.65);cursor:move;touch-action:none}
 .crop-handle{position:absolute;right:-8px;bottom:-8px;width:20px;height:20px;background:var(--gold);border:2px solid #171244;border-radius:50%;cursor:nwse-resize;touch-action:none}
 @media(max-width:600px){
-  .scroll-wrapper{padding:0 10px}
-  .scroll-roller{width:16px}
+  .page{padding:22px 12px 32px}
+  .scroll-wrapper{padding:0 10px;max-width:100%;overflow:hidden}
+  .scroll-roller{width:12px;top:0;bottom:0}
+  .scroll-roller.left{left:2px}.scroll-roller.right{right:2px}
+  .scroll-roller::before,.scroll-roller::after{width:16px;height:10px}
+  .scroll-roller::before{top:-4px}.scroll-roller::after{bottom:-4px}
   .map-viewport{aspect-ratio:1/1;min-height:340px}
   .snap{grid-template-columns:repeat(2,1fr);gap:14px 10px}
   .cards{grid-template-columns:repeat(2,1fr);gap:12px}
