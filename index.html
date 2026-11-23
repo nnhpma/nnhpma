@@ -134,6 +134,13 @@
   .pin[aria-pressed="true"] span,.pin:hover span{font-size:11px;padding:2px 6px;max-width:none;opacity:1}
   .map-hint{font-size:11px;padding:2px 8px}
 }
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  .pin{padding:2px;min-width:32px;min-height:32px}
+  .pin i{width:11px;height:11px;margin-bottom:1px;border-width:1.5px}
+  .pin span{font-size:9px;padding:0px 3px;max-width:64px;overflow:hidden;text-overflow:ellipsis;opacity:.82}
+  .pin[aria-pressed="true"] span,.pin:hover span{font-size:11px;padding:2px 6px;max-width:none;opacity:1}
+  .map-hint{font-size:11px;padding:2px 8px}
+}
   .scroll-wrapper{padding:0 10px}
   .scroll-roller{width:16px}
   .map-viewport{aspect-ratio:4/3;min-height:300px}
@@ -988,6 +995,16 @@ const cropper = {
       };
       reader.readAsDataURL(file);
     });
+  },
+
+  initFrame() {
+    const bw = this.boxEl.clientWidth || 320;
+    const bh = this.boxEl.clientHeight || 320;
+    let w = bw * 0.75, h = w / this.ratio;
+    if (h > bh * 0.85) { h = bh * 0.85; w = h * this.ratio; }
+    this.rect = { x: (bw - w) / 2, y: (bh - h) / 2, w, h };
+    this.updateFrame();
+    this.bindEvents();
   },
 
   updateFrame() {
