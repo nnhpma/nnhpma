@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>魔法相簿～暖暖拍照小天地</title>
-  <link rel="preconnect" href="https://googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=IM+Fell+English:ital@1&family=Noto+Serif+TC:wght@400;600;900&display=swap" rel="stylesheet">
   <style>
     :root{color-scheme:dark;--bg:#0c0a22;--paper:#171244;--paper2:#201a58;--ink:#ece8ff;--muted:#b3abe6;--line:#4b3f9a;--gold:#e6c27a;--wax:#c58bff;--danger:#e05a6d;--shadow:rgba(0,0,0,.65);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -100,7 +100,7 @@
     .modal h3{margin:0 0 14px;font:900 20px "Noto Serif TC",serif;color:var(--gold)}
     .field{margin-bottom:14px}
     .field label{display:block;font-size:14px;font-weight:600;margin-bottom:5px}
-    .field input[type="text"],.field input[type="number"],.field textarea,.field select{width:100%;background:#100c30;border:1px solid var(--line);border-radius:6px;padding:9px 12px;color:var(--ink);font:inherit}
+    .field input[type="text"],.field input[type="number"],.field input[type="date"],.field textarea,.field select{width:100%;background:#100c30;border:1px solid var(--line);border-radius:6px;padding:9px 12px;color:var(--ink);font:inherit}
     .field textarea{min-height:80px;resize:vertical}
     .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin-top:8px}
@@ -169,7 +169,7 @@
           <button type="button" onclick="mapCtrl.reset()">⟲</button>
         </div>
         <div class="map-stage" id="mapStage">
-          <svg viewBox="0 0 800 550" preserveAspectRatio="xMidYMid slice" xmlns="http://w3.org">
+          <svg viewBox="0 0 800 550" preserveAspectRatio="xMidYMid slice" xmlns="[http://www.w3.org/2000/svg]"
             <defs>
               <radialGradient id="castleGlow" cx="50%" cy="42%" r="45%"><stop offset="0%" stop-color="#e6c27a" stop-opacity="0.22"/><stop offset="60%" stop-color="#8a6eff" stop-opacity="0.08"/><stop offset="100%" stop-color="#0b0820" stop-opacity="0"/></radialGradient>
               <linearGradient id="lakeGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#19164a" stop-opacity="0.85"/><stop offset="100%" stop-color="#0d0b2b" stop-opacity="0.95"/></linearGradient>
@@ -450,34 +450,45 @@ data: null, isAdmin: false, activeHouse: null, activeSpotId: null, tempPhotos: [
   setAdmin(f) { this.isAdmin = f; document.body.classList.toggle("is-admin", f); document.getElementById("adminLoginBtn").style.display = f ? "none" : "inline-block"; },
   async persist() { await StorageAdapter.save(this.data); this.renderAll(); },
   renderAll() { this.renderEvents(); this.renderHouses(); this.renderWizards(); this.renderMap(); },
+// 新增一個輔助函式，確保各種日期格式都能正確轉換為時間戳記進行比較
+  getSortedEvents() {
+    return [...(this.data.events || [])].sort((a, b) => {
+      const parseTime = (d) => {
+        if (!d) return 0;
+        const normalized = String(d).replace(/\//g, "-").trim();
+        const ts = Date.parse(normalized);
+        return isNaN(ts) ? 0 : ts;
+      };
+      return parseTime(b.date) - parseTime(a.date); // 由近到遠（降冪排列）
+    });
+  },
+
   renderEvents() {
     const el = document.getElementById("eventList");
-    if (!this.data.events.length) { el.innerHTML = `<p style="text-align:center;color:var(--muted)">尚無活動紀錄，點擊上方按鈕新增吧！</p>`; return; }
-    el.innerHTML = this.data.events.map((ev, i) => `
+    const sortedEvents = this.getSortedEvents();
+    if (!sortedEvents.length) {
+      el.innerHTML = `<p style="text-align:center;color:var(--muted)">尚無活動紀錄，點擊上方按鈕新增吧！</p>`;
+      return;
+    }
+    el.innerHTML = sortedEvents.map((ev) => `
       <article class="event">
         <div class="event-head">
           <div><h3>${this.esc(ev.title)}</h3><div class="date">${this.formatDate(ev.date)}</div></div>
           <div class="admin-only" style="gap:6px"><button class="btn btn-sm" onclick="app.openEventModal('${ev.id}')">編輯</button><button class="btn btn-sm btn-danger" onclick="app.deleteEvent('${ev.id}')">刪除</button></div>
         </div>
         <p>${this.esc(ev.desc)}</p>
-        <div class="snap">${(ev.photos || []).map((p, j) => `<figure class="pol" onclick="app.openEventLightbox(${i},${j})">${p.url ? `<img src="${p.url}" loading="lazy">` : `<div class="ph" style="--h:${p.hue || 250}">Memory #${j + 1}<br><small>(待上傳實拍)</small></div>`}<figcaption>${this.esc(p.caption || ev.date)}</figcaption></figure>`).join("")}</div>
+        <div class="snap">${(ev.photos || []).map((p, j) => `<figure class="pol" onclick="app.openEventLightbox('${ev.id}',${j})">${p.url ? `<img src="${p.url}" loading="lazy">` : `<div class="ph" style="--h:${p.hue || 250}">Memory #${j + 1}<br><small>(待上傳實拍)</small></div>`}<figcaption>${this.esc(p.caption || ev.date)}</figcaption></figure>`).join("")}</div>
       </article>`).join("");
   },
-  openEventLightbox(i, j) {
-    const ev = this.data.events.at(i);
+
+  openEventLightbox(id, j) {
+    const ev = this.data.events.find((e) => e.id === id);
     if (!ev || !ev.photos.length) return;
-    lb.open(ev.photos.map((p, k) => ({ url: p.url || this.makePh(p.hue || 250, ev.title, p.caption || `照片 ${k + 1}`), title: ev.title, sub: `${this.formatDate(ev.date)}${p.caption ? " ・ " + p.caption : ""}` })), j);
-  },
-  openEventModal(id = null) {
-    const ev = id ? this.data.events.find((e) => e.id === id) : null;
-    this.tempPhotos = ev ? JSON.parse(JSON.stringify(ev.photos)) : [];
-    this.showModal(`<h3>${ev ? "編輯活動紀錄" : "新增活動紀錄"}</h3>
-      <div class="field"><label>活動主題</label><input type="text" id="fEvTitle" value="${ev ? this.esc(ev.title) : ""}"></div>
-      <div class="field"><label>活動日期</label><input type="text" id="fEvDate" value="${ev ? this.esc(ev.date) : new Date().toISOString().slice(0, 10)}"></div>
-      <div class="field"><label>活動文字紀錄</label><textarea id="fEvDesc">${ev ? this.esc(ev.desc) : ""}</textarea></div>
-      <div class="field"><label>上傳團拍照片（最多 10 張，自動壓縮）</label><input type="file" accept="image/*" multiple onchange="app.uploadPhotos(event,10)"><div class="preview-grid" id="modalPhotoGrid"></div></div>
-      <div class="modal-footer"><button type="button" class="btn btn-ghost" onclick="app.closeModal()">取消</button><button type="button" class="btn" onclick="app.saveEvent('${id || ""}')">儲存</button></div>`);
-    this.renderModalGrid();
+    lb.open(ev.photos.map((p, k) => ({
+      url: p.url || this.makePh(p.hue || 250, ev.title, p.caption || `照片 ${k + 1}`),
+      title: ev.title,
+      sub: `${this.formatDate(ev.date)}${p.caption ? " ・ " + p.caption : ""}`
+    })), j);
   },
   async saveEvent(id) {
     const title = document.getElementById("fEvTitle").value.trim();
