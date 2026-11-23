@@ -169,7 +169,7 @@
           <button type="button" onclick="mapCtrl.reset()">⟲</button>
         </div>
         <div class="map-stage" id="mapStage">
-        <svg viewBox="0 0 800 550" preserveAspectRatio="xMidYMid slice" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)">
+        <svg viewBox="0 0 800 550" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <radialGradient id="castleGlow" cx="50%" cy="42%" r="45%"><stop offset="0%" stop-color="#e6c27a" stop-opacity="0.22"/><stop offset="60%" stop-color="#8a6eff" stop-opacity="0.08"/><stop offset="100%" stop-color="#0b0820" stop-opacity="0"/></radialGradient>
               <linearGradient id="lakeGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#19164a" stop-opacity="0.85"/><stop offset="100%" stop-color="#0d0b2b" stop-opacity="0.95"/></linearGradient>
@@ -481,8 +481,8 @@ data: null, isAdmin: false, activeHouse: null, activeSpotId: null, tempPhotos: [
       </article>`).join("");
   },
 
-  openEventLightbox(id, j) {
-    const ev = this.data.events.find((e) => e.id === id);
+openEventLightbox(id, j) {
+    const ev = this.data.events.find((e) => String(e.id) === String(id));
     if (!ev || !ev.photos.length) return;
     lb.open(ev.photos.map((p, k) => ({
       url: p.url || this.makePh(p.hue || 250, ev.title, p.caption || `照片 ${k + 1}`),
@@ -490,27 +490,43 @@ data: null, isAdmin: false, activeHouse: null, activeSpotId: null, tempPhotos: [
       sub: `${this.formatDate(ev.date)}${p.caption ? " ・ " + p.caption : ""}`
     })), j);
   },
+
+  normalizeDateInput(d) {
+    if (!d) return new Date().toISOString().slice(0, 10);
+    const m = String(d).trim().match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+    if (m) return `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
+    return new Date().toISOString().slice(0, 10);
+  },
+
   openEventModal(id = null) {
-    const ev = id ? this.data.events.find((e) => e.id === id) : null;
-    this.tempPhotos = ev ? JSON.parse(JSON.stringify(ev.photos)) : [];
-    const dateVal = ev && ev.date ? ev.date.replace(/\//g, "-") : new Date().toISOString().slice(0, 10);
+    const ev = id ? this.data.events.find((e) => String(e.id) === String(id)) : null;
+    this.tempPhotos = ev ? JSON.parse(JSON.stringify(ev.photos || [])) : [];
+    const dateVal = ev ? this.normalizeDateInput(ev.date) : new Date().toISOString().slice(0, 10);
     this.showModal(`<h3>${ev ? "編輯活動紀錄" : "新增活動紀錄"}</h3>
       <div class="field"><label>活動主題</label><input type="text" id="fEvTitle" value="${ev ? this.esc(ev.title) : ""}"></div>
       <div class="field"><label>活動日期</label><input type="date" id="fEvDate" value="${this.esc(dateVal)}"></div>
       <div class="field"><label>活動文字紀錄</label><textarea id="fEvDesc">${ev ? this.esc(ev.desc) : ""}</textarea></div>
       <div class="field"><label>上傳團拍照片（最多 10 張，自動壓縮）</label><input type="file" accept="image/*" multiple onchange="app.uploadPhotos(event,10)"><div class="preview-grid" id="modalPhotoGrid"></div></div>
-      <div class="modal-footer"><button type="button" class="btn btn-ghost" onclick="app.closeModal()">取消</button><button type="button" class="btn" onclick="app.saveEvent('${id || ""}')">儲存</button></div>`);
+      <div class="modal-footer"><button type="button" class="btn btn-ghost" onclick="app.closeModal()">取消</button><button type="button" class="btn" onclick="app.saveEvent('${ev ? this.esc(ev.id) : ""}')">儲存</button></div>`);
     this.renderModalGrid();
   },
+
   async saveEvent(id) {
     const title = document.getElementById("fEvTitle").value.trim();
     if (!title) return alert("請填寫活動主題！");
     const obj = { title, date: document.getElementById("fEvDate").value.trim(), desc: document.getElementById("fEvDesc").value.trim(), photos: this.tempPhotos };
-    if (id) Object.assign(this.data.events.find((e) => e.id === id), obj);
+    const target = id ? this.data.events.find((e) => String(e.id) === String(id)) : null;
+    if (target) Object.assign(target, obj);
     else this.data.events.unshift({ id: "ev_" + Date.now(), ...obj });
     this.closeModal(); await this.persist();
   },
-  async deleteEvent(id) { if (confirm("確定刪除此活動？")) { this.data.events = this.data.events.filter((e) => e.id !== id); await this.persist(); } },
+
+  async deleteEvent(id) {
+    if (confirm("確定刪除此活動？")) {
+      this.data.events = this.data.events.filter((e) => String(e.id) !== String(id));
+      await this.persist();
+    }
+  },
 toggleHouse(id) {
     this.activeHouse = this.activeHouse === id ? null : id;
     this.renderHouses();
