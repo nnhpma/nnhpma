@@ -135,25 +135,6 @@
   .map-hint{font-size:11px;padding:2px 8px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-  .pin{padding:2px;min-width:32px;min-height:32px}
-  .pin i{width:11px;height:11px;margin-bottom:1px;border-width:1.5px}
-  .pin span{font-size:9px;padding:0px 3px;max-width:64px;overflow:hidden;text-overflow:ellipsis;opacity:.82}
-  .pin[aria-pressed="true"] span,.pin:hover span{font-size:11px;padding:2px 6px;max-width:none;opacity:1}
-  .map-hint{font-size:11px;padding:2px 8px}
-}
-  .scroll-wrapper{padding:0 10px}
-  .scroll-roller{width:16px}
-  .map-viewport{aspect-ratio:4/3;min-height:300px}
-  .snap{grid-template-columns:repeat(2,1fr);gap:14px 10px}
-  .cards{grid-template-columns:repeat(2,1fr);gap:12px}
-  .card{padding:8px;border-top-width:6px}
-  .card h4{font-size:15px;margin-top:8px}
-  .card .hn{font-size:11px}
-  .card .ttl{font-size:12px;margin:2px 0 8px}
-  .mini{gap:4px}
-  .card-actions .btn-sm{padding:3px 6px;font-size:12px}
-}
-    @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
   </style>
 </head>
 <body>
@@ -982,21 +963,19 @@ const cropper = {
     return new Promise((res) => {
       this.resolve = res;
       const reader = new FileReader();
-      reader.onload = (ev) => {
+      reader.onload = async (ev) => {
         this.imgEl = document.getElementById("cropImg");
         this.boxEl = document.getElementById("cropBox");
         this.frameEl = document.getElementById("cropFrame");
-        const modal = document.getElementById("cropModal");
-        modal.classList.add("open");
-        this.imgEl.onload = () => {
-          setTimeout(() => this.initFrame(), 50);
-        };
         this.imgEl.src = ev.target.result;
+        try { await this.imgEl.decode(); } catch (e) {}
+        document.getElementById("cropModal").classList.add("open");
+        requestAnimationFrame(() => this.initFrame());
       };
+      reader.onerror = () => res(null);
       reader.readAsDataURL(file);
     });
   },
-
   initFrame() {
     const bw = this.boxEl.clientWidth || 320;
     const bh = this.boxEl.clientHeight || 320;
