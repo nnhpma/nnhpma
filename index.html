@@ -928,14 +928,25 @@ window.CLOUDINARY_CONFIG = {
   };
 
 if (firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith("貼上")) {
-    const fbApp = initializeApp(firebaseConfig);
-    window.FB = {
-      db: getFirestore(fbApp),
-      doc, getDoc, setDoc
-    };
-    if (window.app && window.app.data) {
-      window.app.data = await window.StorageAdapter.load();
-      window.app.renderAll();
+    try {
+      const fbApp = initializeApp(firebaseConfig);
+      window.FB = {
+        db: getFirestore(fbApp),
+        doc, getDoc, setDoc
+      };
+      // 確保無論 app.init() 是否先跑完，都強制向雲端抓取最新資料並重繪畫面
+      const cloudData = await StorageAdapter.load();
+      if (cloudData) {
+        app.data = cloudData;
+        if (app.data.spots && app.data.spots.length && !app.activeSpotId) {
+          app.activeSpotId = app.data.spots[0].id;
+        }
+        app.renderAll();
+      }
+    } catch (err) {
+      console.error("Firebase 初始化或同步失敗：", err);
+      const badge = document.getElementById("storageBadge");
+      if (badge) badge.textContent = "雲端連線失敗：" + err.message;
     }
   }
 </script>
