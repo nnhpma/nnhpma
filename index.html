@@ -110,7 +110,32 @@
     .modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
     footer{margin-top:34px;text-align:center;color:var(--muted);font-size:14px}
     .admin-trigger{background:none;border:1px solid rgba(179,171,230,.3);color:var(--muted);border-radius:20px;padding:4px 14px;font-size:12px;cursor:pointer;margin-top:10px}
+    /* 圖片裁切視窗樣式 */
+.crop-box{position:relative;width:100%;max-width:360px;margin:10px auto;background:#08061a;border:1px solid var(--line);border-radius:6px;overflow:hidden;touch-action:none;user-select:none}
+.crop-box img{display:block;width:100%;height:auto;pointer-events:none}
+.crop-mask{position:absolute;inset:0;background:rgba(8,6,26,.65);pointer-events:none}
+.crop-frame{position:absolute;border:2px solid var(--gold);box-shadow:0 0 0 9999px rgba(8,6,26,.65);cursor:move;touch-action:none}
+.crop-handle{position:absolute;right:-8px;bottom:-8px;width:20px;height:20px;background:var(--gold);border:2px solid #171244;border-radius:50%;cursor:nwse-resize;touch-action:none}
     @media(max-width:600px){
+  .scroll-wrapper{padding:0 10px}
+  .scroll-roller{width:16px}
+  .map-viewport{aspect-ratio:1/1;min-height:340px} /* 手機版地圖改為正方形，上下空間更充裕 */
+  .snap{grid-template-columns:repeat(2,1fr);gap:14px 10px}
+  .cards{grid-template-columns:repeat(2,1fr);gap:12px}
+  .card{padding:8px;border-top-width:6px}
+  .card h4{font-size:15px;margin-top:8px}
+  .card .hn{font-size:11px}
+  .card .ttl{font-size:12px;margin:2px 0 8px}
+  .mini{gap:4px}
+  .card-actions .btn-sm{padding:3px 6px;font-size:12px}
+
+  /* ▼ 新增：手機版地圖圖釘精簡樣式 ▼ */
+  .pin{padding:2px;min-width:32px;min-height:32px}
+  .pin i{width:11px;height:11px;margin-bottom:1px;border-width:1.5px}
+  .pin span{font-size:9px;padding:0px 3px;max-width:64px;overflow:hidden;text-overflow:ellipsis;opacity:.82}
+  .pin[aria-pressed="true"] span,.pin:hover span{font-size:11px;padding:2px 6px;max-width:none;opacity:1}
+  .map-hint{font-size:11px;padding:2px 8px}
+}
   .scroll-wrapper{padding:0 10px}
   .scroll-roller{width:16px}
   .map-viewport{aspect-ratio:4/3;min-height:300px}
@@ -249,6 +274,22 @@
 </div>
 
 <div class="modal-backdrop" id="editorModal">
+  <div class="modal-backdrop" id="cropModal" style="z-index:950">
+  <div class="modal" style="max-width:440px">
+    <h3 id="cropTitle">✦ 拖曳框選裁切範圍</h3>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 8px">拖曳金色方框移動位置，拉動右下角圓點縮放大小：</p>
+    <div class="crop-box" id="cropBox">
+      <img id="cropImg" src="" alt="">
+      <div class="crop-frame" id="cropFrame">
+        <div class="crop-handle" id="cropHandle"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-ghost" onclick="cropper.cancel()">取消</button>
+      <button type="button" class="btn" onclick="cropper.confirm()">確認裁切並上傳</button>
+    </div>
+  </div>
+</div>
   <div class="modal" id="editorContent"></div>
 </div>
 
@@ -623,18 +664,39 @@ const cardHouse = h || HOUSES.find((x) => x.id === w.house) || HOUSES.at(0);
       <div class="field-row"><div class="field"><label>巫師名稱</label><input type="text" id="fWzName" value="${w ? this.esc(w.name) : ""}"></div><div class="field"><label>所屬學院</label><select id="fWzHouse">${opts}</select></div></div>
       <div class="field"><label>專屬稱號</label><input type="text" id="fWzTitle" value="${w ? this.esc(w.title) : ""}"></div>
       <div class="field"><label>主要半身照（1 張）</label><input type="file" accept="image/*" onchange="app.uploadPortrait(event)"><div id="portraitPreview" style="margin-top:8px">${this.tempPortrait ? `<img src="${this.tempPortrait}" style="height:100px;border-radius:4px">` : `<small style="color:var(--muted)">尚未上傳</small>`}</div></div>
-      <div class="field"><label>遊戲內寫真照片（最多 2 張）</label><input type="file" accept="image/*" multiple onchange="app.uploadPhotos(event,2)"><div class="preview-grid" id="modalPhotoGrid"></div></div>
+      <div class="field"><label>遊戲內寫真照片（最多 2 張）</label><input type="file" accept="image/*" multiple onchange="app.uploadWizardSnaps(event)"><div class="preview-grid" id="modalPhotoGrid"></div></div>
       <div class="modal-footer"><button type="button" class="btn btn-ghost" onclick="app.closeModal()">取消</button><button type="button" class="btn" onclick="app.saveWizard('${id || ""}')">儲存</button></div>`);
     this.renderModalGrid();
   },
 async uploadPortrait(e) {
     const f = e.target.files && e.target.files.item(0);
+    e.target.value = "";
     if (!f) return;
+    const croppedDataUrl = await cropper.open(f, 3 / 4, "裁切主要半身照（3:4）");
+    if (!croppedDataUrl) return;
     const prev = document.getElementById("portraitPreview");
     prev.innerHTML = `<small style="color:var(--gold)">✦ 正在上傳至 Cloudinary...</small>`;
-    const compressed = await compressImage(f, 1000, 0.85);
-    this.tempPortrait = await StorageAdapter.uploadDataUrl(compressed, "portraits");
+    this.tempPortrait = await StorageAdapter.uploadDataUrl(croppedDataUrl, "portraits");
     prev.innerHTML = `<img src="${this.tempPortrait}" style="height:100px;border-radius:4px">`;
+  },
+
+  async uploadWizardSnaps(e) {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    for (const f of files) {
+      if (this.tempPhotos.length >= 2) { alert("最多上傳 2 張寫真照片。"); break; }
+      const croppedDataUrl = await cropper.open(f, 1 / 1, "裁切遊戲內寫真（1:1）");
+      if (!croppedDataUrl) continue;
+      const grid = document.getElementById("modalPhotoGrid");
+      if (grid) grid.insertAdjacentHTML("beforebegin", `<div id="uploadHint" style="color:var(--gold);font-size:13px;margin-top:6px">✦ 正在上傳至 Cloudinary...</div>`);
+      try {
+        const url = await StorageAdapter.uploadDataUrl(croppedDataUrl, "photos");
+        this.tempPhotos.push({ url, hue: Math.floor(Math.random() * 360), caption: f.name.replace(/\.[^/.]+$/, "") });
+        this.renderModalGrid();
+      } finally {
+        document.getElementById("uploadHint")?.remove();
+      }
+    }
   },
   async saveWizard(id) {
     const name = document.getElementById("fWzName").value.trim();
@@ -904,7 +966,97 @@ const lb = {
   step(d) { if (this.items.length) { this.idx = (this.idx + d + this.items.length) % this.items.length; this.render(); } },
   render() { const it = this.items.at(this.idx); if (!it) return; document.getElementById("lbImg").src = it.url; document.getElementById("lbCap").innerHTML = `<strong>${app.esc(it.title)}</strong><small>${app.esc(it.sub)}（${this.idx + 1} / ${this.items.length}）</small>`; }
 };
+const cropper = {
+  resolve: null, ratio: 1, imgEl: null, boxEl: null, frameEl: null,
+  rect: { x: 0, y: 0, w: 100, h: 100 }, mode: null, start: { x: 0, y: 0, rx: 0, ry: 0, rw: 0, rh: 0 },
 
+  open(file, ratio = 3 / 4, title = "拖曳框選裁切範圍") {
+    this.ratio = ratio;
+    document.getElementById("cropTitle").textContent = "✦ " + title;
+    return new Promise((res) => {
+      this.resolve = res;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        this.imgEl = document.getElementById("cropImg");
+        this.boxEl = document.getElementById("cropBox");
+        this.frameEl = document.getElementById("cropFrame");
+        this.imgEl.onload = () => {
+          document.getElementById("cropModal").classList.add("open");
+          requestAnimationFrame(() => this.initFrame());
+        };
+        this.imgEl.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  },
+
+  initFrame() {
+    const bw = this.boxEl.clientWidth, bh = this.boxEl.clientHeight;
+    let w = bw * 0.75, h = w / this.ratio;
+    if (h > bh * 0.85) { h = bh * 0.85; w = h * this.ratio; }
+    this.rect = { x: (bw - w) / 2, y: (bh - h) / 2, w, h };
+    this.updateFrame();
+    this.bindEvents();
+  },
+
+  updateFrame() {
+    const { x, y, w, h } = this.rect;
+    Object.assign(this.frameEl.style, { left: x + "px", top: y + "px", width: w + "px", height: h + "px" });
+  },
+
+  bindEvents() {
+    const onDown = (e, mode) => {
+      e.preventDefault(); e.stopPropagation();
+      this.mode = mode;
+      const pt = e.touches ? e.touches[0] : e;
+      this.start = { x: pt.clientX, y: pt.clientY, rx: this.rect.x, ry: this.rect.y, rw: this.rect.w, rh: this.rect.h };
+    };
+    this.frameEl.onpointerdown = (e) => onDown(e, e.target.id === "cropHandle" ? "resize" : "move");
+
+    window.onpointermove = (e) => {
+      if (!this.mode) return;
+      const dx = e.clientX - this.start.x, dy = e.clientY - this.start.y;
+      const bw = this.boxEl.clientWidth, bh = this.boxEl.clientHeight;
+      if (this.mode === "move") {
+        this.rect.x = Math.max(0, Math.min(bw - this.rect.w, this.start.rx + dx));
+        this.rect.y = Math.max(0, Math.min(bh - this.rect.h, this.start.ry + dy));
+      } else if (this.mode === "resize") {
+        let nw = Math.max(60, this.start.rw + dx);
+        let nh = nw / this.ratio;
+        if (this.start.rx + nw > bw) { nw = bw - this.start.rx; nh = nw / this.ratio; }
+        if (this.start.ry + nh > bh) { nh = bh - this.start.ry; nw = nh * this.ratio; }
+        this.rect.w = nw; this.rect.h = nh;
+      }
+      this.updateFrame();
+    };
+    window.onpointerup = () => { this.mode = null; };
+  },
+
+  confirm() {
+    const scaleX = this.imgEl.naturalWidth / this.boxEl.clientWidth;
+    const scaleY = this.imgEl.naturalHeight / this.boxEl.clientHeight;
+    const sx = this.rect.x * scaleX, sy = this.rect.y * scaleY;
+    const sw = this.rect.w * scaleX, sh = this.rect.h * scaleY;
+
+    const maxDim = 1000;
+    const outW = sw > sh ? maxDim : Math.round(maxDim * (sw / sh));
+    const outH = sh >= sw ? maxDim : Math.round(maxDim * (sh / sw));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = outW; canvas.height = outH;
+    canvas.getContext("2d").drawImage(this.imgEl, sx, sy, sw, sh, 0, 0, outW, outH);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+    this.cleanup(dataUrl);
+  },
+
+  cancel() { this.cleanup(null); },
+
+  cleanup(result) {
+    document.getElementById("cropModal").classList.remove("open");
+    window.onpointermove = null; window.onpointerup = null;
+    if (this.resolve) { this.resolve(result); this.resolve = null; }
+  }
+};
 document.addEventListener("keydown", (e) => { if (!document.getElementById("lightbox").classList.contains("open")) return; if (e.key === "Escape") lb.close(); if (e.key === "ArrowLeft") lb.step(-1); if (e.key === "ArrowRight") lb.step(1); });
 window.addEventListener("DOMContentLoaded", () => { mapCtrl.init(); app.init(); });
 </script>
