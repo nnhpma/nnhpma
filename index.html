@@ -110,7 +110,19 @@
     .modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
     footer{margin-top:34px;text-align:center;color:var(--muted);font-size:14px}
     .admin-trigger{background:none;border:1px solid rgba(179,171,230,.3);color:var(--muted);border-radius:20px;padding:4px 14px;font-size:12px;cursor:pointer;margin-top:10px}
-    @media(max-width:600px){.scroll-wrapper{padding:0 10px}.scroll-roller{width:16px}.map-viewport{aspect-ratio:4/3;min-height:300px}.snap{grid-template-columns:repeat(2,1fr);gap:14px 10px}.cards{grid-template-columns:1fr}}
+    @media(max-width:600px){
+  .scroll-wrapper{padding:0 10px}
+  .scroll-roller{width:16px}
+  .map-viewport{aspect-ratio:4/3;min-height:300px}
+  .snap{grid-template-columns:repeat(2,1fr);gap:14px 10px}
+  .cards{grid-template-columns:repeat(2,1fr);gap:12px}
+  .card{padding:8px;border-top-width:6px}
+  .card h4{font-size:15px;margin-top:8px}
+  .card .hn{font-size:11px}
+  .card .ttl{font-size:12px;margin:2px 0 8px}
+  .mini{gap:4px}
+  .card-actions .btn-sm{padding:3px 6px;font-size:12px}
+}
     @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
   </style>
 </head>
