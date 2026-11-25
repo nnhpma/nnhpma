@@ -652,7 +652,7 @@ const cardHouse = h || HOUSES.find((x) => x.id === w.house) || HOUSES.at(0);
     const w = this.data.wizards.find((x) => x.id === id);
     if (!w) return;
     const h = HOUSES.find((x) => x.id === w.house) || HOUSES.at(0);
-    lb.open([{ url: w.portrait || this.makePh(w.hue || 230, w.name, "主要半身照"), title: `${w.name}（${h.name}）`, sub: `稱號：${w.title}` }, ...(w.photos || []).map((p, i) => ({ url: p.url || this.makePh(p.hue || 240, w.name, `留影 #${i + 1}`), title: `${w.name}（${h.name}）`, sub: p.caption || `遊戲內留影 #${i + 1}` }))], idx);
+    lb.open([{ url: w.portrait || this.makePh(w.hue || 230, w.name, "主要半身照"), title: `${w.name}（${h.name}）`, sub: `想說的：${w.title}` }, ...(w.photos || []).map((p, i) => ({ url: p.url || this.makePh(p.hue || 240, w.name, `留影 #${i + 1}`), title: `${w.name}（${h.name}）`, sub: p.caption || `遊戲內留影 #${i + 1}` }))], idx);
   },
   openWizardModal(id = null) {
     const w = id ? this.data.wizards.find((x) => x.id === id) : null;
@@ -661,7 +661,7 @@ const cardHouse = h || HOUSES.find((x) => x.id === w.house) || HOUSES.at(0);
     const opts = HOUSES.map((h) => `<option value="${h.id}" ${(w ? w.house : this.activeHouse) === h.id ? "selected" : ""}>${h.name}</option>`).join("");
     this.showModal(`<h3>${w ? "編輯巫師檔案" : "新增巫師檔案"}</h3>
       <div class="field-row"><div class="field"><label>巫師名稱</label><input type="text" id="fWzName" value="${w ? this.esc(w.name) : ""}"></div><div class="field"><label>所屬學院</label><select id="fWzHouse">${opts}</select></div></div>
-      <div class="field"><label>專屬稱號</label><input type="text" id="fWzTitle" value="${w ? this.esc(w.title) : ""}"></div>
+      <div class="field"><label>專屬稱號、想說的</label><input type="text" id="fWzTitle" value="${w ? this.esc(w.title) : ""}"></div>
       <div class="field"><label>主要半身照（1 張）</label><input type="file" accept="image/*" onchange="app.uploadPortrait(event)"><div id="portraitPreview" style="margin-top:8px">${this.tempPortrait ? `<img src="${this.tempPortrait}" style="height:100px;border-radius:4px">` : `<small style="color:var(--muted)">尚未上傳</small>`}</div></div>
       <div class="field"><label>遊戲內寫真照片（最多 2 張）</label><input type="file" accept="image/*" multiple onchange="app.uploadWizardSnaps(event)"><div class="preview-grid" id="modalPhotoGrid"></div></div>
       <div class="modal-footer"><button type="button" class="btn btn-ghost" onclick="app.closeModal()">取消</button><button type="button" class="btn" onclick="app.saveWizard('${id || ""}')">儲存</button></div>`);
