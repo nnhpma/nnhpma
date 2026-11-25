@@ -529,17 +529,17 @@ data: null, isAdmin: false, activeHouse: null, activeSpotId: null, tempPhotos: [
           <div class="admin-only" style="gap:6px"><button class="btn btn-sm" onclick="app.openEventModal('${ev.id}')">編輯</button><button class="btn btn-sm btn-danger" onclick="app.deleteEvent('${ev.id}')">刪除</button></div>
         </div>
         <p>${this.esc(ev.desc)}</p>
-        <div class="snap">${(ev.photos || []).map((p, j) => `<figure class="pol" onclick="app.openEventLightbox('${ev.id}',${j})">${p.url ? `<img src="${p.url}" loading="lazy">` : `<div class="ph" style="--h:${p.hue || 250}">Memory #${j + 1}<br><small>(待上傳實拍)</small></div>`}<figcaption>${this.esc(p.caption || ev.date)}</figcaption></figure>`).join("")}</div>
+        <div class="snap">${(ev.photos || []).map((p, j) => `<figure class="pol" onclick="app.openEventLightbox('${ev.id}',${j})">${p.url ? `<img src="${p.url}" loading="lazy">` : `<div class="ph" style="--h:${p.hue || 250}">Memory #${j + 1}<br><small>(待上傳實拍)</small></div>`}<figcaption>${this.esc(p.caption || "")}</figcaption></figure>`).join("")}</div>
       </article>`).join("");
   },
 
-openEventLightbox(id, j) {
+  openEventLightbox(id, j) {
     const ev = this.data.events.find((e) => String(e.id) === String(id));
     if (!ev || !ev.photos.length) return;
     lb.open(ev.photos.map((p, k) => ({
       url: p.url || this.makePh(p.hue || 250, ev.title, p.caption || `照片 ${k + 1}`),
       title: ev.title,
-      sub: `${this.formatDate(ev.date)}${p.caption ? " ・ " + p.caption : ""}`
+      sub: p.caption || ""
     })), j);
   },
 
@@ -912,9 +912,19 @@ async uploadPhotos(e, max, withDate = false) {
       e.target.value = "";
     }
   },
-  renderModalGrid() {
+renderModalGrid() {
     const g = document.getElementById("modalPhotoGrid");
-    if (g) g.innerHTML = this.tempPhotos.map((p, i) => `<div class="preview-item">${p.url ? `<img src="${p.url}">` : `<div class="ph" style="--h:${p.hue || 250};font-size:11px">佔位圖</div>`}<button type="button" onclick="app.tempPhotos.splice(${i},1);app.renderModalGrid()">✕</button></div>`).join("");
+    if (!g) return;
+    g.style.gridTemplateColumns = "repeat(auto-fill,minmax(120px,1fr))";
+    g.innerHTML = this.tempPhotos.map((p, i) => `
+      <div class="preview-item" style="aspect-ratio:auto;display:flex;flex-direction:column;background:#100c30;padding:4px">
+        <div style="position:relative;aspect-ratio:1;border-radius:4px;overflow:hidden">
+          ${p.url ? `<img src="${p.url}">` : `<div class="ph" style="--h:${p.hue || 250};font-size:11px">佔位圖</div>`}
+          <button type="button" onclick="app.tempPhotos.splice(${i},1);app.renderModalGrid()">✕</button>
+        </div>
+        <input type="text" placeholder="副標題（可留白）" value="${this.esc(p.caption || "")}" oninput="app.tempPhotos[${i}].caption=this.value" style="margin-top:4px;font-size:12px;padding:4px 6px;background:#171244;border:1px solid var(--line);border-radius:4px;color:var(--ink)">
+      </div>
+    `).join("");
   },
   exportBackup() {
     const a = document.createElement("a");
