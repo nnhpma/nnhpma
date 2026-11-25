@@ -652,7 +652,7 @@ const cardHouse = h || HOUSES.find((x) => x.id === w.house) || HOUSES.at(0);
     const w = this.data.wizards.find((x) => x.id === id);
     if (!w) return;
     const h = HOUSES.find((x) => x.id === w.house) || HOUSES.at(0);
-    lb.open([{ url: w.portrait || this.makePh(w.hue || 230, w.name, "主要半身照"), title: `${w.name}（${h.name}）`, sub:${w.title}` }, ...(w.photos || []).map((p, i) => ({ url: p.url || this.makePh(p.hue || 240, w.name, `留影 #${i + 1}`), title: `${w.name}（${h.name}）`, sub: p.caption || `遊戲內留影 #${i + 1}` }))], idx);
+    lb.open([{ url: w.portrait || this.makePh(w.hue || 230, w.name, "主要半身照"), title: `${w.name}（${h.name}）`, sub:`想說的：${w.title}` }, ...(w.photos || []).map((p, i) => ({ url: p.url || this.makePh(p.hue || 240, w.name, `留影 #${i + 1}`), title: `${w.name}（${h.name}）`, sub: p.caption || `遊戲內留影 #${i + 1}` }))], idx);
   },
   openWizardModal(id = null) {
     const w = id ? this.data.wizards.find((x) => x.id === id) : null;
