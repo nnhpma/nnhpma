@@ -149,8 +149,8 @@
     .oracle-card h4{grid-column:2;margin:2px 0 2px;font:900 19px/1.25 "Noto Serif TC",serif}
     .oracle-card .hn{grid-column:2;font-size:12px;font-weight:600;color:var(--c2,#4b3f9a)}
     .oracle-card .ttl{grid-column:2;margin:4px 0 8px;color:#524885;font-size:13px;font-style:italic;line-height:1.4}
-    .oracle-card .mini{grid-column:2;display:grid;grid-template-columns:1fr 1fr;gap:6px;align-self:end}
-    .oracle-card .mini img,.oracle-card .mini .ph{width:100%;aspect-ratio:1;max-height:84px;object-fit:cover;border-radius:3px;cursor:zoom-in}
+    .oracle-card .mini{grid-column:2;display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start;align-self:end}
+    .oracle-card .mini img,.oracle-card .mini .ph{width:100%;height:auto;max-height:none;aspect-ratio:1 / 1;object-fit:cover;border-radius:3px;cursor:zoom-in}
     .oracle-stage .modal-footer{margin-top:14px;padding-top:12px}
     @keyframes orbSpin{to{transform:rotate(360deg)}}
     @keyframes orbPulse{from{transform:scale(1)}to{transform:scale(1.07)}}
@@ -169,7 +169,7 @@
       .oracle-card .hn{font-size:11px}
       .oracle-card .ttl{font-size:12px;margin:3px 0 6px}
       .oracle-card .mini{gap:4px}
-      .oracle-card .mini img,.oracle-card .mini .ph{max-height:58px}
+      .oracle-card .mini img,.oracle-card .mini .ph{height:auto;max-height:none;aspect-ratio:1 / 1}
       .oracle-stage .modal-footer{margin-top:10px;padding-top:10px;gap:8px}
       .oracle-stage .modal-footer .btn{padding:6px 12px;font-size:13px}
     }
