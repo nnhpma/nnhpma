@@ -124,7 +124,36 @@
 .crop-mask{position:absolute;inset:0;background:rgba(8,6,26,.65);pointer-events:none}
 .crop-frame{position:absolute;border:2px solid var(--gold);box-shadow:0 0 0 9999px rgba(8,6,26,.65);cursor:move;touch-action:none}
 .crop-handle{position:absolute;right:-8px;bottom:-8px;width:20px;height:20px;background:var(--gold);border:2px solid #171244;border-radius:50%;cursor:nwse-resize;touch-action:none}
-@media(max-width:600px){
+/* 測測你今日的幸運巫師 - 水晶球互動樣式 */
+    .oracle-trigger-wrap{display:flex;justify-content:center;margin:0 0 22px}
+    .oracle-btn{position:relative;display:inline-flex;align-items:center;gap:12px;background:radial-gradient(circle at 30% 25%,rgba(197,139,255,.28),rgba(28,20,84,.95) 70%);border:1px solid var(--gold);border-radius:999px;padding:10px 24px 10px 14px;color:var(--gold);font:600 15px/1.4 "Noto Serif TC",serif;cursor:pointer;box-shadow:0 0 22px rgba(197,139,255,.28),inset 0 0 12px rgba(230,194,122,.22);transition:transform .2s,box-shadow .2s}
+    .oracle-btn:hover{transform:translateY(-2px);box-shadow:0 0 30px rgba(230,194,122,.5),inset 0 0 16px rgba(197,139,255,.38)}
+    .orb-mini{width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff6ff,#c58bff 38%,#4b3f9a 76%,#161042);box-shadow:0 0 12px #c58bff,inset 0 -3px 6px rgba(0,0,0,.6);position:relative;flex-shrink:0}
+    .orb-mini::after{content:"";position:absolute;top:5px;left:6px;width:7px;height:4px;border-radius:50%;background:rgba(255,255,255,.75);transform:rotate(-25deg)}
+    .oracle-stage{text-align:center;padding:8px 4px 4px}
+    .crystal-ball-wrap{position:relative;width:168px;height:168px;margin:10px auto 18px;display:grid;place-items:center;cursor:pointer}
+    .crystal-halo{position:absolute;inset:-14px;border-radius:50%;border:1px dashed rgba(230,194,122,.55);animation:orbSpin 14s linear infinite;pointer-events:none}
+    .crystal-halo::before{content:"✦";position:absolute;top:-9px;left:50%;transform:translateX(-50%);color:var(--gold);font-size:13px}
+    .crystal-ball{width:144px;height:144px;border-radius:50%;position:relative;overflow:hidden;display:grid;place-items:center;padding:16px;background:radial-gradient(circle at 32% 26%,rgba(255,250,255,.92) 0%,rgba(216,176,255,.68) 22%,rgba(94,68,196,.85) 58%,rgba(19,13,56,.98) 100%);border:2px solid rgba(230,194,122,.75);box-shadow:0 0 34px rgba(197,139,255,.55),0 0 64px rgba(120,80,255,.35),inset 0 -14px 26px rgba(10,6,34,.85);transition:transform .25s,box-shadow .25s}
+    .crystal-ball::before{content:"";position:absolute;top:14px;left:24px;width:36px;height:18px;border-radius:50%;background:rgba(255,255,255,.55);filter:blur(2px);transform:rotate(-28deg);pointer-events:none}
+    .crystal-ball::after{content:"";position:absolute;inset:-30%;background:conic-gradient(from 0deg,transparent,rgba(230,194,122,.35),transparent,rgba(197,139,255,.45),transparent);opacity:0;pointer-events:none}
+    .crystal-ball-wrap:hover .crystal-ball{transform:scale(1.04);box-shadow:0 0 42px rgba(230,194,122,.65),0 0 75px rgba(197,139,255,.45),inset 0 -14px 26px rgba(10,6,34,.85)}
+    .crystal-ball-wrap.divining .crystal-ball{animation:orbPulse .45s ease-in-out infinite alternate;box-shadow:0 0 55px rgba(230,194,122,.9),0 0 95px rgba(197,139,255,.8),inset 0 0 24px rgba(255,244,210,.6)}
+    .crystal-ball-wrap.divining .crystal-ball::after{opacity:1;animation:orbSpin 1.1s linear infinite}
+    .crystal-ball-wrap.divining .crystal-halo{animation-duration:1.4s;border-color:var(--gold)}
+    .crystal-text{position:relative;z-index:2;color:#fff9ea;font:900 16px/1.35 "Noto Serif TC",serif;text-shadow:0 0 10px rgba(16,10,48,.95),0 0 18px rgba(230,194,122,.8)}
+    .crystal-base{width:92px;height:16px;margin:-12px auto 0;border-radius:50%;background:linear-gradient(180deg,#e6c27a,#7d5a1e);border:1px solid #ffe8ad;box-shadow:0 6px 14px rgba(0,0,0,.75)}
+    .oracle-card{max-width:300px;margin:8px auto 0;background:#efeaff;color:#241c52;border:1px solid #b8aaf0;border-top:8px solid var(--c,#8b6eff);border-radius:6px;padding:14px;box-shadow:0 12px 30px rgba(0,0,0,.75),0 0 28px rgba(230,194,122,.35);animation:oracleReveal .45s cubic-bezier(.2,.85,.3,1.1)}
+    .oracle-card img,.oracle-card .ph{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:3px}
+    .oracle-card h4{margin:10px 0 2px;font:900 20px/1.3 "Noto Serif TC",serif}
+    .oracle-card .hn{font-size:13px;font-weight:600;color:var(--c2,#4b3f9a)}
+    .oracle-card .ttl{margin:4px 0 10px;color:#524885;font-size:14px;font-style:italic}
+    .oracle-card .mini{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .oracle-card .mini img,.oracle-card .mini .ph{aspect-ratio:1;cursor:zoom-in}
+    @keyframes orbSpin{to{transform:rotate(360deg)}}
+    @keyframes orbPulse{from{transform:scale(1)}to{transform:scale(1.07)}}
+    @keyframes oracleReveal{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @media(max-width:600px){
   .page{padding:22px 12px 32px}
   .scroll-wrapper{padding:0 10px;max-width:100%;overflow:hidden}
   .scroll-roller{width:12px;top:0;bottom:0}
@@ -179,7 +208,12 @@
     <div class="section-toolbar admin-only"><button class="btn" onclick="app.openEventModal()">＋ 新增活動紀錄</button></div>
     <div id="eventList"></div>
   </section>
-
+<div class="oracle-trigger-wrap">
+      <button type="button" class="oracle-btn" onclick="oracle.open()">
+        <span class="orb-mini" aria-hidden="true"></span>
+        <span>✦ 測測你今日的幸運巫師</span>
+      </button>
+    </div>
   <section class="page" id="b">
     <h2>巫師檔案</h2>
     <p class="lead fell"></p>
@@ -1067,7 +1101,115 @@ const cropper = {
   }
 };
 document.addEventListener("keydown", (e) => { if (!document.getElementById("lightbox").classList.contains("open")) return; if (e.key === "Escape") lb.close(); if (e.key === "ArrowLeft") lb.step(-1); if (e.key === "ArrowRight") lb.step(1); });
-window.addEventListener("DOMContentLoaded", () => { mapCtrl.init(); app.init(); });
+const oracle = {
+  timer: null,
+  isSpinning: false,
+  open() {
+    const list = app.data?.wizards || [];
+    if (!list.length) {
+      alert("目前還沒有收錄任何巫師檔案喔！");
+      return;
+    }
+    this.isSpinning = false;
+    clearInterval(this.timer);
+    app.showModal(`
+      <div class="oracle-stage">
+        <h3 style="margin-bottom:6px">✦ 測測你今日的幸運巫師</h3>
+        <p style="font-size:14px;color:var(--muted);margin:0 0 14px">凝視星辰水晶球，輕觸喚醒今日與你最有緣的魔法夥伴</p>
+        <div id="oracleBody">
+          <div class="crystal-ball-wrap" id="crystalBallWrap" role="button" tabindex="0" aria-label="點擊水晶球進行占卜" onclick="oracle.spin()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();oracle.spin()}">
+            <div class="crystal-halo"></div>
+            <div class="crystal-ball">
+              <div class="crystal-text" id="crystalText">輕觸水晶球<br><small style="font-weight:400;font-size:12px;color:#ffe7a3">開啟占卜</small></div>
+            </div>
+          </div>
+          <div class="crystal-base"></div>
+        </div>
+        <div class="modal-footer" id="oracleFooter" style="justify-content:center">
+          <button type="button" class="btn" onclick="oracle.spin()">✦ 輕觸水晶球</button>
+          <button type="button" class="btn btn-ghost" onclick="oracle.close()">關閉</button>
+        </div>
+      </div>
+    `);
+  },
+  spin() {
+    const list = app.data?.wizards || [];
+    if (!list.length || this.isSpinning) return;
+    this.isSpinning = true;
+    clearInterval(this.timer);
+
+    const bodyEl = document.getElementById("oracleBody");
+    if (!document.getElementById("crystalBallWrap")) {
+      bodyEl.innerHTML = `
+        <div class="crystal-ball-wrap" id="crystalBallWrap">
+          <div class="crystal-halo"></div>
+          <div class="crystal-ball">
+            <div class="crystal-text" id="crystalText">星光凝聚中...</div>
+          </div>
+        </div>
+        <div class="crystal-base"></div>
+      `;
+    }
+
+    const wrap = document.getElementById("crystalBallWrap");
+    const textEl = document.getElementById("crystalText");
+    const footerEl = document.getElementById("oracleFooter");
+    wrap.classList.add("divining");
+    footerEl.innerHTML = `<span style="color:var(--gold);font-size:14px">✦ 神秘星光正在凝聚中...</span>`;
+
+    let ticks = 0;
+    const totalTicks = 18;
+    const chosen = list[Math.floor(Math.random() * list.length)];
+
+    this.timer = setInterval(() => {
+      ticks++;
+      const sample = list[Math.floor(Math.random() * list.length)];
+      textEl.innerHTML = `✦ ${app.esc(sample.name)} ✦`;
+      if (ticks >= totalTicks) {
+        clearInterval(this.timer);
+        textEl.innerHTML = `✦ ${app.esc(chosen.name)} ✦`;
+        setTimeout(() => {
+          this.isSpinning = false;
+          this.reveal(chosen);
+        }, 320);
+      }
+    }, 75);
+  },
+  reveal(w) {
+    const h = HOUSES.find((x) => x.id === w.house) || HOUSES.at(0);
+    const p0 = (w.photos || []).at(0) || { url: "", hue: (w.hue || 230) + 20 };
+    const p1 = (w.photos || []).at(1) || { url: "", hue: (w.hue || 230) + 40 };
+    const bodyEl = document.getElementById("oracleBody");
+    const footerEl = document.getElementById("oracleFooter");
+    if (!bodyEl || !footerEl) return;
+
+    bodyEl.innerHTML = `
+      <p style="color:var(--gold);font-size:14px;margin:0 0 10px">✨ 星光指引了你今日的幸運巫師 ✨</p>
+      <div class="oracle-card" style="--c:${h.c};--c2:${h.c2}">
+        ${w.portrait
+          ? `<img src="${w.portrait}" alt="${app.esc(w.name)}" style="cursor:zoom-in" onclick="app.openWizardLightbox('${w.id}',0)">`
+          : `<div class="ph" style="--h:${w.hue || 230};cursor:zoom-in" onclick="app.openWizardLightbox('${w.id}',0)">Half-Body Portrait<br><small>(半身照待上傳)</small></div>`}
+        <h4>${app.esc(w.name)}</h4>
+        <div class="hn">${h.name} ・ ${h.en}</div>
+        <div class="ttl">「${app.esc(w.title || "見習巫師")}」</div>
+        <div class="mini">
+          ${p0.url ? `<img src="${p0.url}" onclick="app.openWizardLightbox('${w.id}',1)">` : `<div class="ph" style="--h:${p0.hue}" onclick="app.openWizardLightbox('${w.id}',1)">Snap 1</div>`}
+          ${p1.url ? `<img src="${p1.url}" onclick="app.openWizardLightbox('${w.id}',2)">` : `<div class="ph" style="--h:${p1.hue}" onclick="app.openWizardLightbox('${w.id}',2)">Snap 2</div>`}
+        </div>
+      </div>
+    `;
+    footerEl.innerHTML = `
+      <button type="button" class="btn" onclick="oracle.spin()">↻ 再測一次</button>
+      <button type="button" class="btn btn-ghost" onclick="oracle.close()">收起水晶球</button>
+    `;
+  },
+  close() {
+    clearInterval(this.timer);
+    this.isSpinning = false;
+    app.closeModal();
+  }
+};
+  window.addEventListener("DOMContentLoaded", () => { mapCtrl.init(); app.init(); });
 </script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
