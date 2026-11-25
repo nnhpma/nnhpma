@@ -155,6 +155,10 @@
     @keyframes orbSpin{to{transform:rotate(360deg)}}
     @keyframes orbPulse{from{transform:scale(1)}to{transform:scale(1.07)}}
     @keyframes oracleReveal{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
+    /* 編輯視窗照片拖曳排序樣式 */
+    .preview-item[draggable="true"]{cursor:grab}
+    .preview-item.dragging{opacity:.45;transform:scale(.97)}
+    .preview-item.drag-over{outline:2px dashed var(--gold);outline-offset:2px}
     @media(max-width:600px){
       .modal{padding:12px 12px 14px;max-height:92dvh}
       .modal h3{font-size:16px;margin-bottom:6px}
@@ -883,7 +887,7 @@ async uploadPortrait(e) {
     return `${baseFrame}${body}<text x="665" y="60" text-anchor="middle" fill="#e6c27a" fill-opacity="0.65" font-size="14" font-family="IM Fell English,serif" font-style="italic">${this.esc(region)} </text>`;
   },
 
-  renderMap() {
+ renderMap() {
     const regions = [...new Set(this.data.spots.map((s) => s.name.includes("－") ? s.name.split("－").at(0) : "其他秘境"))];
     if (!regions.includes(this.activeRegion)) this.activeRegion = regions.at(0) || "";
 
@@ -919,12 +923,17 @@ async uploadPortrait(e) {
     const sp = this.data.spots.find((s) => s.id === this.activeSpotId) || filtered.at(0);
     const panel = document.getElementById("spotDetail");
     if (!sp) { panel.innerHTML = `<p style="text-align:center;color:var(--muted);margin:0">尚未建立任何地圖地點。</p>`; return; }
-    panel.innerHTML = `<div class="spot-head"><div><h3>✦ ${this.esc(sp.name)} <span class="en-name fell">${this.esc(sp.enName || "")}</span></h3></div><div class="admin-only" style="gap:6px"><button class="btn btn-sm" onclick="app.openSpotModal('${sp.id}')">編輯地點</button><button class="btn btn-sm btn-danger" onclick="app.deleteSpot('${sp.id}')">刪除</button></div></div><p class="spot-desc">${this.esc(sp.desc || "")}</p><div class="snap">${(sp.photos || []).map((p, i) => `<figure class="pol" onclick="app.openSpotLightbox('${sp.id}',${i})">${p.url ? `<img src="${p.url}" loading="lazy">` : `<div class="ph" style="--h:${p.hue || 250}">${this.esc(sp.name)}<br><small>(待上傳團拍)</small></div>`}<figcaption>${this.esc(p.date || "")} ${this.esc(p.caption || "")}</figcaption></figure>`).join("") || `<p style="color:var(--muted);font-size:14px">此地點尚無團拍照片。</p>`}</div>`;
+    panel.innerHTML = `<div class="spot-head"><div><h3>✦ ${this.esc(sp.name)} <span class="en-name fell">${this.esc(sp.enName || "")}</span></h3></div><div class="admin-only" style="gap:6px"><button class="btn btn-sm" onclick="app.openSpotModal('${sp.id}')">編輯地點</button><button class="btn btn-sm btn-danger" onclick="app.deleteSpot('${sp.id}')">刪除</button></div></div><p class="spot-desc">${this.esc(sp.desc || "")}</p><div class="snap">${(sp.photos || []).map((p, i) => `<figure class="pol" onclick="app.openSpotLightbox('${sp.id}',${i})">${p.url ? `<img src="${p.url}" loading="lazy">` : `<div class="ph" style="--h:${p.hue || 250}">${this.esc(sp.name)}<br><small>(待上傳團拍)</small></div>`}<figcaption>${this.esc(p.caption || "")}</figcaption></figure>`).join("") || `<p style="color:var(--muted);font-size:14px">此地點尚無團拍照片。</p>`}</div>`;
   },
+
 openSpotLightbox(id, idx) {
     const sp = this.data.spots.find((s) => s.id === id);
     if (!sp || !sp.photos.length) return;
-    lb.open(sp.photos.map((p, i) => ({ url: p.url || this.makePh(p.hue || 250, sp.name, p.caption || `留影 #${i + 1}`), title: sp.name, sub: `${p.date ? this.formatDate(p.date) + " ・ " : ""}${p.caption || ""}` })), idx);
+    lb.open(sp.photos.map((p, i) => ({
+      url: p.url || this.makePh(p.hue || 250, sp.name, p.caption || `留影 #${i + 1}`),
+      title: sp.name,
+      sub: p.caption || ""
+    })), idx);
   },
   openSpotModal(id = null) {
     const sp = id ? this.data.spots.find((s) => s.id === id) : null;
@@ -971,14 +980,50 @@ renderModalGrid() {
     if (!g) return;
     g.style.gridTemplateColumns = "repeat(auto-fill,minmax(120px,1fr))";
     g.innerHTML = this.tempPhotos.map((p, i) => `
-      <div class="preview-item" style="aspect-ratio:auto;display:flex;flex-direction:column;background:#100c30;padding:4px">
+      <div class="preview-item" data-photo-idx="${i}" draggable="true" style="aspect-ratio:auto;display:flex;flex-direction:column;background:#100c30;padding:4px">
         <div style="position:relative;aspect-ratio:1;border-radius:4px;overflow:hidden">
-          ${p.url ? `<img src="${p.url}">` : `<div class="ph" style="--h:${p.hue || 250};font-size:11px">佔位圖</div>`}
+          ${p.url ? `<img src="${p.url}" draggable="false">` : `<div class="ph" style="--h:${p.hue || 250};font-size:11px">佔位圖</div>`}
           <button type="button" onclick="app.tempPhotos.splice(${i},1);app.renderModalGrid()">✕</button>
         </div>
         <input type="text" placeholder="副標題（可留白）" value="${this.esc(p.caption || "")}" oninput="app.tempPhotos[${i}].caption=this.value" style="margin-top:4px;font-size:12px;padding:4px 6px;background:#171244;border:1px solid var(--line);border-radius:4px;color:var(--ink)">
       </div>
     `).join("");
+    this.bindPhotoDrag();
+  },
+  dragPhotoIdx: null,
+  bindPhotoDrag() {
+    const g = document.getElementById("modalPhotoGrid");
+    if (!g) return;
+    const items = g.querySelectorAll(".preview-item");
+    items.forEach((item) => {
+      item.addEventListener("dragstart", (e) => {
+        if (e.target.closest("button,input")) { e.preventDefault(); return; }
+        this.dragPhotoIdx = Number(item.dataset.photoIdx);
+        item.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+      });
+      item.addEventListener("dragend", () => {
+        this.dragPhotoIdx = null;
+        items.forEach((el) => el.classList.remove("dragging", "drag-over"));
+      });
+      item.addEventListener("dragover", (e) => {
+        const targetIdx = Number(item.dataset.photoIdx);
+        if (this.dragPhotoIdx === null || targetIdx === this.dragPhotoIdx) return;
+        e.preventDefault();
+        item.classList.add("drag-over");
+      });
+      item.addEventListener("dragleave", () => item.classList.remove("drag-over"));
+      item.addEventListener("drop", (e) => {
+        e.preventDefault();
+        item.classList.remove("drag-over");
+        const targetIdx = Number(item.dataset.photoIdx);
+        if (this.dragPhotoIdx === null || targetIdx === this.dragPhotoIdx) return;
+        const [moved] = this.tempPhotos.splice(this.dragPhotoIdx, 1);
+        this.tempPhotos.splice(targetIdx, 0, moved);
+        this.dragPhotoIdx = null;
+        this.renderModalGrid();
+      });
+    });
   },
   exportBackup() {
     const a = document.createElement("a");
