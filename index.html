@@ -1926,29 +1926,6 @@ const puzzle = {
   }
 };
 
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onUp);
-  },
-
-  findSlotAt(x, y) {
-    const slots = document.querySelectorAll("#puzzleBoard .puzzle-slot");
-    for (const slot of slots) {
-      const r = slot.getBoundingClientRect();
-      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
-        return Number(slot.dataset.slot);
-      }
-    }
-    return null;
-  },
-
-  highlightSlotAt(x, y) {
-    const hovered = this.findSlotAt(x, y);
-    document.querySelectorAll("#puzzleBoard .puzzle-slot").forEach((slot) => {
-      slot.classList.toggle("over", Number(slot.dataset.slot) === hovered);
-    });
-  }
-};
 window.addEventListener("DOMContentLoaded", () => { mapCtrl.init(); magicFx.initWandDust(); initHallAmbience(); app.init(); });
 
 </script>
