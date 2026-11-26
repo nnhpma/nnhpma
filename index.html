@@ -1556,35 +1556,7 @@ function initHallAmbience() {
   if (!host || host.children.length) return;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-  const candleSpots = [
-    { left: "6%", top: "14%", h: 26, sc: 0.85, dx: 6, dy: 12, fd: "6.8s", fl: "1.9s", delay: "0s" },
-    { left: "15%", top: "28%", h: 34, sc: 1.0, dx: -5, dy: 15, fd: "8.2s", fl: "2.3s", delay: "-1.4s" },
-    { left: "86%", top: "16%", h: 30, sc: 0.92, dx: -7, dy: 13, fd: "7.4s", fl: "2.1s", delay: "-2.2s" },
-    { left: "93%", top: "32%", h: 24, sc: 0.8, dx: 5, dy: 11, fd: "6.5s", fl: "1.8s", delay: "-3.1s" },
-    { left: "10%", top: "58%", h: 28, sc: 0.88, dx: 7, dy: 14, fd: "7.9s", fl: "2.4s", delay: "-1.8s" },
-    { left: "90%", top: "62%", h: 32, sc: 0.95, dx: -6, dy: 16, fd: "8.5s", fl: "2.0s", delay: "-4.0s" },
-    { left: "22%", top: "11%", h: 22, sc: 0.78, dx: 4, dy: 10, fd: "7.1s", fl: "2.2s", delay: "-2.7s" },
-    { left: "78%", top: "12%", h: 25, sc: 0.84, dx: -5, dy: 12, fd: "7.6s", fl: "1.9s", delay: "-0.9s" }
-  ];
-
   const frag = document.createDocumentFragment();
-
-  candleSpots.forEach((c) => {
-    const el = document.createElement("div");
-    el.className = "floating-candle";
-    el.style.setProperty("--left", c.left);
-    el.style.setProperty("--top", c.top);
-    el.style.setProperty("--h", c.h + "px");
-    el.style.setProperty("--sc", c.sc);
-    el.style.setProperty("--dx", c.dx + "px");
-    el.style.setProperty("--dy", c.dy + "px");
-    el.style.setProperty("--fd", c.fd);
-    el.style.setProperty("--fl", c.fl);
-    el.style.setProperty("--delay", c.delay);
-    el.innerHTML = `<span class="candle-flame"></span><span class="candle-wax"></span>`;
-    frag.appendChild(el);
-  });
-
   const moteCount = 16;
   for (let i = 0; i < moteCount; i++) {
     const mote = document.createElement("span");
