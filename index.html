@@ -199,6 +199,24 @@
   .pin[aria-pressed="true"] span,.pin:hover span{font-size:11px;padding:2px 6px;max-width:none;opacity:1}
   .map-hint{font-size:11px;padding:2px 8px}
 }
+    /* ✦ 1. 時光器：隨機回顧活動按鈕與高亮動畫 */
+.timeturner-wrap{display:flex;justify-content:center;margin:0 0 24px}
+.timeturner-btn{display:inline-flex;align-items:center;gap:10px;background:radial-gradient(circle at 30% 25%,rgba(230,194,122,.22),rgba(28,20,84,.95) 72%);border:1px solid var(--gold);border-radius:999px;padding:8px 22px;color:var(--gold);font:600 14px/1.4 "Noto Serif TC",serif;cursor:pointer;box-shadow:0 0 18px rgba(230,194,122,.22);transition:transform .2s,box-shadow .2s}
+.timeturner-btn:hover{transform:translateY(-2px);box-shadow:0 0 26px rgba(230,194,122,.45)}
+.tt-icon{display:inline-block;font-size:16px;transition:transform .8s cubic-bezier(.4,0,.2,1)}
+.timeturner-btn.spinning .tt-icon{transform:rotate(540deg)}
+.event.tt-highlight{animation:ttGlow 2.2s ease-out}
+@keyframes ttGlow{0%{box-shadow:0 0 0 2px var(--gold),0 0 34px rgba(230,194,122,.65);background:rgba(230,194,122,.12);border-radius:10px}100%{box-shadow:none;background:transparent}}
+
+/* ✦ 2. 照片雙擊：金色火漆印記與魔法星火粒子 */
+.pol-seal{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#ffeaa8,#c98a26 70%,#7a4b08);border:1.5px solid #fff3c4;color:#2b1800;font-size:12px;line-height:21px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.6);opacity:0;transform:scale(.4) rotate(-25deg);transition:opacity .25s,transform .35s cubic-bezier(.2,1.4,.4,1);pointer-events:none;z-index:3}
+.pol.starred .pol-seal{opacity:1;transform:scale(1) rotate(0deg)}
+.magic-spark{position:fixed;pointer-events:none;z-index:9999;border-radius:50%;animation:sparkBurst var(--dur,.65s) ease-out forwards}
+@keyframes sparkBurst{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) scale(0)}}
+
+/* ✦ 3. 電腦版游標魔杖星塵軌跡 */
+.wand-dust{position:fixed;pointer-events:none;z-index:9998;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle,#fff9dc,#e6c27a 55%,transparent);box-shadow:0 0 8px #e6c27a;animation:dustFade .55s ease-out forwards}
+@keyframes dustFade{0%{opacity:.95;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,calc(-50% + 12px)) scale(.15)}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
   </style>
 </head>
@@ -226,6 +244,14 @@
   </div>
 
   <section class="page on" id="a">
+    <div class="section-toolbar admin-only"><button class="btn" onclick="app.openEventModal()">＋ 新增活動紀錄</button></div>
+    <div class="timeturner-wrap">
+      <button type="button" class="timeturner-btn" id="timeTurnerBtn" onclick="magicFx.spinTimeTurner()">
+        <span class="tt-icon" aria-hidden="true">⏳</span>
+        <span>✦ 時光器：隨機回顧一場活動</span>
+      </button>
+    </div>
+    <div id="eventList"></div>
     <h2>歷屆活動紀錄</h2>
     <p class="lead fell"></p>
     <svg class="orn" viewBox="0 0 160 12" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 6h60M98 6h60"/><path d="M80 1l5 5-5 5-5-5z" fill="currentColor"/><circle cx="68" cy="6" r="2"/><circle cx="92" cy="6" r="2"/></svg>
@@ -588,7 +614,7 @@ data: null, isAdmin: false, activeHouse: null, activeSpotId: null, tempPhotos: [
           <div class="admin-only" style="gap:6px"><button class="btn btn-sm" onclick="app.openEventModal('${ev.id}')">編輯</button><button class="btn btn-sm btn-danger" onclick="app.deleteEvent('${ev.id}')">刪除</button></div>
         </div>
         <p>${this.esc(ev.desc)}</p>
-        <div class="snap">${(ev.photos || []).map((p, j) => `<figure class="pol" onclick="app.openEventLightbox('${ev.id}',${j})">${p.url ? `<img src="${p.url}" loading="lazy">` : `<div class="ph" style="--h:${p.hue || 250}">Memory #${j + 1}<br><small>(待上傳實拍)</small></div>`}<figcaption>${this.esc(p.caption || "")}</figcaption></figure>`).join("")}</div>
+        <div class="snap">${(ev.photos || []).map((p, j) => { const sk = `ev_${ev.id}_${j}`; return `<figure class="pol${magicFx.isStarred(sk) ? " starred" : ""}" data-star-key="${sk}" onclick="magicFx.handlePolClick(event,'${sk}',()=>app.openEventLightbox('${ev.id}',${j}))"><span class="pol-seal" aria-hidden="true">✦</span>${p.url ? `<img src="${p.url}" loading="lazy">` : `<div class="ph" style="--h:${p.hue || 250}">Memory #${j + 1}<br><small>(待上傳實拍)</small></div>`}<figcaption>${this.esc(p.caption || "")}</figcaption></figure>`; }).join("")}</div>
       </article>`).join("");
   },
 
@@ -924,7 +950,7 @@ async uploadPortrait(e) {
     const sp = this.data.spots.find((s) => s.id === this.activeSpotId) || filtered.at(0);
     const panel = document.getElementById("spotDetail");
     if (!sp) { panel.innerHTML = `<p style="text-align:center;color:var(--muted);margin:0">尚未建立任何地圖地點。</p>`; return; }
-    panel.innerHTML = `<div class="spot-head"><div><h3>✦ ${this.esc(sp.name)} <span class="en-name fell">${this.esc(sp.enName || "")}</span></h3></div><div class="admin-only" style="gap:6px"><button class="btn btn-sm" onclick="app.openSpotModal('${sp.id}')">編輯地點</button><button class="btn btn-sm btn-danger" onclick="app.deleteSpot('${sp.id}')">刪除</button></div></div><p class="spot-desc">${this.esc(sp.desc || "")}</p><div class="snap">${(sp.photos || []).map((p, i) => `<figure class="pol" onclick="app.openSpotLightbox('${sp.id}',${i})">${p.url ? `<img src="${p.url}" loading="lazy">` : `<div class="ph" style="--h:${p.hue || 250}">${this.esc(sp.name)}<br><small>(待上傳團拍)</small></div>`}<figcaption>${this.esc(p.caption || "")}</figcaption></figure>`).join("") || `<p style="color:var(--muted);font-size:14px">此地點尚無團拍照片。</p>`}</div>`;
+    panel.innerHTML = `<div class="spot-head"><div><h3>✦ ${this.esc(sp.name)} <span class="en-name fell">${this.esc(sp.enName || "")}</span></h3></div><div class="admin-only" style="gap:6px"><button class="btn btn-sm" onclick="app.openSpotModal('${sp.id}')">編輯地點</button><button class="btn btn-sm btn-danger" onclick="app.deleteSpot('${sp.id}')">刪除</button></div></div><p class="spot-desc">${this.esc(sp.desc || "")}</p><div class="snap">${(sp.photos || []).map((p, i) => { const sk = `sp_${sp.id}_${i}`; return `<figure class="pol${magicFx.isStarred(sk) ? " starred" : ""}" data-star-key="${sk}" onclick="magicFx.handlePolClick(event,'${sk}',()=>app.openSpotLightbox('${sp.id}',${i}))"><span class="pol-seal" aria-hidden="true">✦</span>${p.url ? `<img src="${p.url}" loading="lazy">` : `<div class="ph" style="--h:${p.hue || 250}">${this.esc(sp.name)}<br><small>(待上傳團拍)</small></div>`}<figcaption>${this.esc(p.caption || "")}</figcaption></figure>`; }).join("") || `<p style="color:var(--muted);font-size:14px">此地點尚無團拍照片。</p>`}</div>;
   },
 
 openSpotLightbox(id, idx) {
@@ -1275,6 +1301,119 @@ const oracle = {
     app.closeModal();
   }
 };
+  const magicFx = {
+  stars: new Set(JSON.parse(localStorage.getItem("magic_album_stars") || "[]")),
+  clickTimer: null,
+  lastClickKey: null,
+  lastTtId: null,
+
+  isStarred(key) {
+    return this.stars.has(key);
+  },
+
+  saveStars() {
+    localStorage.setItem("magic_album_stars", JSON.stringify([...this.stars]));
+  },
+
+  // 區分單擊（開啟燈箱）與雙擊（施放星火與火漆印記）
+  handlePolClick(e, key, openLightboxFn) {
+    if (this.clickTimer && this.lastClickKey === key) {
+      clearTimeout(this.clickTimer);
+      this.clickTimer = null;
+      this.lastClickKey = null;
+      this.toggleStar(e, key);
+    } else {
+      clearTimeout(this.clickTimer);
+      this.lastClickKey = key;
+      this.clickTimer = setTimeout(() => {
+        this.clickTimer = null;
+        this.lastClickKey = null;
+        openLightboxFn();
+      }, 240);
+    }
+  },
+
+  toggleStar(e, key) {
+    const card = document.querySelector(`.pol[data-star-key="${key}"]`);
+    if (this.stars.has(key)) {
+      this.stars.delete(key);
+      card?.classList.remove("starred");
+    } else {
+      this.stars.add(key);
+      card?.classList.add("starred");
+    }
+    this.saveStars();
+    this.burstSparks(e.clientX, e.clientY);
+  },
+
+  burstSparks(x, y) {
+    const colors = ["#ffe89e", "#e6c27a", "#c58bff", "#ffffff", "#9b7aff"];
+    for (let i = 0; i < 16; i++) {
+      const sp = document.createElement("span");
+      sp.className = "magic-spark";
+      const angle = (Math.PI * 2 * i) / 16 + (Math.random() - 0.5) * 0.4;
+      const dist = 28 + Math.random() * 44;
+      const size = 4 + Math.random() * 5;
+      sp.style.left = x + "px";
+      sp.style.top = y + "px";
+      sp.style.width = size + "px";
+      sp.style.height = size + "px";
+      sp.style.background = colors[i % colors.length];
+      sp.style.boxShadow = `0 0 8px ${colors[i % colors.length]}`;
+      sp.style.setProperty("--tx", `${Math.cos(angle) * dist}px`);
+      sp.style.setProperty("--ty", `${Math.sin(angle) * dist}px`);
+      sp.style.setProperty("--dur", `${0.45 + Math.random() * 0.3}s`);
+      document.body.appendChild(sp);
+      setTimeout(() => sp.remove(), 800);
+    }
+  },
+
+  // 時光器：隨機回顧一場活動
+  spinTimeTurner() {
+    const cards = Array.from(document.querySelectorAll("#eventList .event"));
+    if (!cards.length) return alert("目前還沒有活動紀錄可以回顧喔！");
+    const btn = document.getElementById("timeTurnerBtn");
+    btn?.classList.remove("spinning");
+    void btn?.offsetWidth;
+    btn?.classList.add("spinning");
+
+    let pool = cards;
+    if (cards.length > 1 && this.lastTtId) {
+      pool = cards.filter((el) => el.dataset.evId !== this.lastTtId);
+    }
+    const target = pool[Math.floor(Math.random() * pool.length)];
+    this.lastTtId = target.dataset.evId || null;
+
+    setTimeout(() => {
+      cards.forEach((c) => c.classList.remove("tt-highlight"));
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.classList.add("tt-highlight");
+      const rect = target.getBoundingClientRect();
+      this.burstSparks(rect.left + rect.width / 2, Math.max(120, rect.top + 40));
+    }, 350);
+  },
+
+  // 僅電腦版滑鼠裝置啟用魔杖星塵軌跡
+  initWandDust() {
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let lastTime = 0;
+    document.addEventListener("pointermove", (e) => {
+      if (e.pointerType !== "mouse") return;
+      const now = performance.now();
+      if (now - lastTime < 38) return;
+      lastTime = now;
+      const dot = document.createElement("span");
+      dot.className = "wand-dust";
+      dot.style.left = (e.clientX + (Math.random() - 0.5) * 8) + "px";
+      dot.style.top = (e.clientY + (Math.random() - 0.5) * 8) + "px";
+      document.body.appendChild(dot);
+      setTimeout(() => dot.remove(), 600);
+    }, { passive: true });
+  }
+};
+
+window.addEventListener("DOMContentLoaded", () => { mapCtrl.init(); magicFx.initWandDust(); app.init(); });
   window.addEventListener("DOMContentLoaded", () => { mapCtrl.init(); app.init(); });
 </script>
 <script type="module">
