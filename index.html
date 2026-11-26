@@ -244,6 +244,9 @@
   </div>
 
   <section class="page on" id="a">
+    <h2>歷屆活動紀錄</h2>
+    <p class="lead fell"></p>
+    <svg class="orn" viewBox="0 0 160 12" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 6h60M98 6h60"/><path d="M80 1l5 5-5 5-5-5z" fill="currentColor"/><circle cx="68" cy="6" r="2"/><circle cx="92" cy="6" r="2"/></svg>
     <div class="section-toolbar admin-only"><button class="btn" onclick="app.openEventModal()">＋ 新增活動紀錄</button></div>
     <div class="timeturner-wrap">
       <button type="button" class="timeturner-btn" id="timeTurnerBtn" onclick="magicFx.spinTimeTurner()">
@@ -252,6 +255,7 @@
       </button>
     </div>
     <div id="eventList"></div>
+  </section>
     <h2>歷屆活動紀錄</h2>
     <p class="lead fell"></p>
     <svg class="orn" viewBox="0 0 160 12" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 6h60M98 6h60"/><path d="M80 1l5 5-5 5-5-5z" fill="currentColor"/><circle cx="68" cy="6" r="2"/><circle cx="92" cy="6" r="2"/></svg>
@@ -608,7 +612,7 @@ data: null, isAdmin: false, activeHouse: null, activeSpotId: null, tempPhotos: [
       return;
     }
     el.innerHTML = sortedEvents.map((ev) => `
-      <article class="event">
+      <article class="event" data-ev-id="${ev.id}">
         <div class="event-head">
           <div><h3>${this.esc(ev.title)}</h3><div class="date">${this.formatDate(ev.date)}</div></div>
           <div class="admin-only" style="gap:6px"><button class="btn btn-sm" onclick="app.openEventModal('${ev.id}')">編輯</button><button class="btn btn-sm btn-danger" onclick="app.deleteEvent('${ev.id}')">刪除</button></div>
@@ -1414,7 +1418,7 @@ const oracle = {
 };
 
 window.addEventListener("DOMContentLoaded", () => { mapCtrl.init(); magicFx.initWandDust(); app.init(); });
-  window.addEventListener("DOMContentLoaded", () => { mapCtrl.init(); app.init(); });
+
 </script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
