@@ -229,6 +229,16 @@
 .wand-dust{position:fixed;pointer-events:none;z-index:9998;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle,#fff9dc,#e6c27a 55%,transparent);box-shadow:0 0 8px #e6c27a;animation:dustFade .55s ease-out forwards}
 @keyframes dustFade{0%{opacity:.95;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,calc(-50% + 12px)) scale(.15)}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* ✦ 大禮堂漂浮蠟燭與星光塵埃氛圍 */
+.hall-ambience{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:2}
+.floating-candle{position:absolute;top:var(--top,18%);left:var(--left,10%);display:flex;flex-direction:column;align-items:center;opacity:var(--op,.72);transform:scale(var(--sc,1));animation:candleFloat var(--fd,7s) ease-in-out var(--delay,0s) infinite alternate}
+.candle-flame{width:8px;height:14px;border-radius:50% 50% 35% 35% / 65% 65% 35% 35%;background:radial-gradient(circle at 50% 72%,#fffbe0 18%,#ffcf5c 58%,rgba(255,140,40,.15) 100%);box-shadow:0 0 12px rgba(255,214,110,.9),0 0 26px rgba(230,194,122,.45);transform-origin:50% 90%;animation:flameFlicker var(--fl,2.1s) ease-in-out var(--delay,0s) infinite alternate}
+.candle-wax{width:9px;height:var(--h,28px);margin-top:1px;border-radius:2px 2px 3px 3px;background:linear-gradient(90deg,#d8cbe8,#fff7e6 42%,#b9a8d4 100%);box-shadow:0 4px 12px rgba(0,0,0,.45)}
+.hall-mote{position:absolute;bottom:-12px;left:var(--left,50%);width:var(--sz,5px);height:var(--sz,5px);border-radius:50%;background:radial-gradient(circle,#fff9dc 0%,rgba(230,194,122,.75) 55%,transparent 100%);box-shadow:0 0 8px rgba(230,194,122,.6);opacity:0;animation:moteRise var(--dur,11s) linear var(--delay,0s) infinite}
+@keyframes candleFloat{0%{transform:translate(0,0) rotate(-1.5deg) scale(var(--sc,1))}100%{transform:translate(var(--dx,6px),calc(var(--dy,14px) * -1)) rotate(1.8deg) scale(var(--sc,1))}}
+@keyframes flameFlicker{0%{transform:scaleX(.92) scaleY(1.04) rotate(-2deg)}50%{transform:scaleX(1.06) scaleY(.94) rotate(2deg)}100%{transform:scaleX(.96) scaleY(1.06) rotate(-1deg)}}
+@keyframes moteRise{0%{opacity:0;transform:translate(0,0) scale(.6)}18%{opacity:var(--mop,.7)}82%{opacity:var(--mop,.7)}100%{opacity:0;transform:translate(var(--mx,18px),-92vh) scale(1.1)}}
+@media(max-width:600px){.floating-candle:nth-child(n+6){display:none}.hall-mote:nth-child(n+11){display:none}}
 /* ✦ 金色飄逸羽毛：回到頂端浮動按鈕 */
 .back-top-btn{position:fixed;right:20px;bottom:calc(22px + env(safe-area-inset-bottom,0px));min-width:56px;padding:7px 8px 6px;border-radius:16px;background:radial-gradient(circle at 32% 24%,#382c8f,#150f3d 78%);border:1.5px solid var(--gold);color:var(--gold);cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 6px 20px rgba(0,0,0,.75),0 0 16px rgba(230,194,122,.35);opacity:0;visibility:hidden;transform:translateY(14px) scale(.92);transition:opacity .25s,transform .25s,visibility .25s,box-shadow .2s;z-index:850}
 .back-top-btn.show{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
@@ -241,6 +251,7 @@
   </style>
 </head>
 <body>
+<div class="hall-ambience" id="hallAmbience" aria-hidden="true"></div>
 <div class="book">
   <header>
     <h1>魔法相簿</h1>
@@ -1540,7 +1551,63 @@ window.addEventListener("scroll", () => {
   if (btn) btn.classList.toggle("show", window.scrollY > 260);
 }, { passive: true });
 
-window.addEventListener("DOMContentLoaded", () => { mapCtrl.init(); magicFx.initWandDust(); app.init(); });
+function initHallAmbience() {
+  const host = document.getElementById("hallAmbience");
+  if (!host || host.children.length) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const candleSpots = [
+    { left: "6%", top: "14%", h: 26, sc: 0.85, dx: 6, dy: 12, fd: "6.8s", fl: "1.9s", delay: "0s" },
+    { left: "15%", top: "28%", h: 34, sc: 1.0, dx: -5, dy: 15, fd: "8.2s", fl: "2.3s", delay: "-1.4s" },
+    { left: "86%", top: "16%", h: 30, sc: 0.92, dx: -7, dy: 13, fd: "7.4s", fl: "2.1s", delay: "-2.2s" },
+    { left: "93%", top: "32%", h: 24, sc: 0.8, dx: 5, dy: 11, fd: "6.5s", fl: "1.8s", delay: "-3.1s" },
+    { left: "10%", top: "58%", h: 28, sc: 0.88, dx: 7, dy: 14, fd: "7.9s", fl: "2.4s", delay: "-1.8s" },
+    { left: "90%", top: "62%", h: 32, sc: 0.95, dx: -6, dy: 16, fd: "8.5s", fl: "2.0s", delay: "-4.0s" },
+    { left: "22%", top: "11%", h: 22, sc: 0.78, dx: 4, dy: 10, fd: "7.1s", fl: "2.2s", delay: "-2.7s" },
+    { left: "78%", top: "12%", h: 25, sc: 0.84, dx: -5, dy: 12, fd: "7.6s", fl: "1.9s", delay: "-0.9s" }
+  ];
+
+  const frag = document.createDocumentFragment();
+
+  candleSpots.forEach((c) => {
+    const el = document.createElement("div");
+    el.className = "floating-candle";
+    el.style.setProperty("--left", c.left);
+    el.style.setProperty("--top", c.top);
+    el.style.setProperty("--h", c.h + "px");
+    el.style.setProperty("--sc", c.sc);
+    el.style.setProperty("--dx", c.dx + "px");
+    el.style.setProperty("--dy", c.dy + "px");
+    el.style.setProperty("--fd", c.fd);
+    el.style.setProperty("--fl", c.fl);
+    el.style.setProperty("--delay", c.delay);
+    el.innerHTML = `<span class="candle-flame"></span><span class="candle-wax"></span>`;
+    frag.appendChild(el);
+  });
+
+  const moteCount = 16;
+  for (let i = 0; i < moteCount; i++) {
+    const mote = document.createElement("span");
+    mote.className = "hall-mote";
+    const left = (4 + ((i * 6.3 + Math.random() * 4) % 92)).toFixed(1) + "%";
+    const sz = (3.5 + Math.random() * 4).toFixed(1) + "px";
+    const dur = (10 + Math.random() * 8).toFixed(1) + "s";
+    const delay = (-Math.random() * 14).toFixed(1) + "s";
+    const mx = ((Math.random() - 0.5) * 64).toFixed(0) + "px";
+    const mop = (0.35 + Math.random() * 0.4).toFixed(2);
+    mote.style.setProperty("--left", left);
+    mote.style.setProperty("--sz", sz);
+    mote.style.setProperty("--dur", dur);
+    mote.style.setProperty("--delay", delay);
+    mote.style.setProperty("--mx", mx);
+    mote.style.setProperty("--mop", mop);
+    frag.appendChild(mote);
+  }
+
+  host.appendChild(frag);
+}
+
+window.addEventListener("DOMContentLoaded", () => { mapCtrl.init(); magicFx.initWandDust(); initHallAmbience(); app.init(); });
 
 </script>
 <script type="module">
