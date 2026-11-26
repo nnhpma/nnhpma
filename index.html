@@ -207,7 +207,7 @@
 .timeturner-btn.spinning .tt-icon{transform:rotate(540deg)}
 .event.tt-highlight{animation:ttGlow 2.2s ease-out}
 @keyframes ttGlow{0%{box-shadow:0 0 0 2px var(--gold),0 0 34px rgba(230,194,122,.65);background:rgba(230,194,122,.12);border-radius:10px}100%{box-shadow:none;background:transparent}}
-/* 時光器彈窗卡片與旋轉沙漏樣式 */
+/* 時光器彈窗卡片與旋轉時光器樣式 */
 .tt-orb{background:radial-gradient(circle at 32% 26%,rgba(255,248,225,.92) 0%,rgba(230,194,122,.65) 28%,rgba(120,82,32,.88) 68%,rgba(28,18,6,.98) 100%)!important;border-color:var(--gold)!important}
 .tt-hourglass{font-size:34px;display:inline-block;margin-bottom:4px;filter:drop-shadow(0 0 10px rgba(230,194,122,.8));transition:transform .4s}
 .crystal-ball-wrap.divining .tt-hourglass{animation:ttSpinFast .65s linear infinite}
@@ -1408,12 +1408,12 @@ const timeTurner = {
     app.showModal(`
       <div class="oracle-stage">
         <h3 style="margin-bottom:6px">✦ 時光器：隨機回顧一場活動</h3>
-        <p style="font-size:14px;color:var(--muted);margin:0 0 14px">撥動金色沙漏，讓時光倒流回某一場難忘的魔法聚會</p>
+        <p style="font-size:14px;color:var(--muted);margin:0 0 14px">轉動時光器，讓時光倒流回某一場難忘的魔法聚會</p>
         <div id="ttBody">
           <div class="crystal-ball-wrap" id="ttBallWrap" role="button" tabindex="0" aria-label="轉動時光器" onclick="timeTurner.spin()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();timeTurner.spin()}">
             <div class="crystal-halo"></div>
             <div class="crystal-ball tt-orb">
-              <div class="crystal-text" id="ttText"><span class="tt-hourglass">⏳</span><br><small style="font-weight:400;font-size:12px;color:#ffe7a3">輕觸轉動沙漏</small></div>
+              <div class="crystal-text" id="ttText"><span class="tt-hourglass">⏳</span><br><small style="font-weight:400;font-size:12px;color:#ffe7a3">輕觸轉動時光器</small></div>
             </div>
           </div>
           <div class="crystal-base"></div>
@@ -1448,7 +1448,7 @@ const timeTurner = {
     const textEl = document.getElementById("ttText");
     const footerEl = document.getElementById("ttFooter");
     wrap.classList.add("divining");
-    footerEl.innerHTML = `<span style="color:var(--gold);font-size:14px">⏳ 金沙正在逆流穿梭時光...</span>`;
+    footerEl.innerHTML = `<span style="color:var(--gold);font-size:14px">⏳ 正在逆流穿梭時光...</span>`;
 
     let pool = list;
     if (list.length > 1 && this.lastId) {
