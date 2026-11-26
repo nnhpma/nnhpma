@@ -177,6 +177,25 @@
       .oracle-stage .modal-footer{margin-top:10px;padding-top:10px;gap:8px}
       .oracle-stage .modal-footer .btn{padding:6px 12px;font-size:13px}
     }
+    /* 活動照片拖曳拼圖小遊戲樣式 */
+    .puzzle-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;max-height:52vh;overflow-y:auto;padding:4px}
+    .puzzle-choice{background:var(--paper2);border:1px solid var(--line);border-radius:8px;padding:8px;cursor:pointer;text-align:left;color:var(--ink);font:inherit;transition:transform .15s,border-color .15s}
+    .puzzle-choice:hover{transform:translateY(-2px);border-color:var(--gold)}
+    .puzzle-choice img,.puzzle-choice .ph{width:100%;aspect-ratio:4/3;border-radius:4px;display:block;object-fit:cover}
+    .puzzle-choice .ptitle{margin-top:6px;font-size:13px;font-weight:600;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .puzzle-choice .psub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .puzzle-toolbar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin-bottom:10px}
+    .puzzle-board{position:relative;margin:0 auto;background:rgba(12,9,36,.85);border:1px solid var(--gold);border-radius:6px;overflow:hidden;touch-action:none;user-select:none}
+    .puzzle-ghost{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:.18;pointer-events:none}
+    .puzzle-grid{position:relative;width:100%;height:100%;display:grid}
+    .puzzle-slot{border:1px dashed rgba(230,194,122,.28);display:grid;place-items:center;transition:background .12s,border-color .12s}
+    .puzzle-slot.over{background:rgba(230,194,122,.18);border-color:var(--gold)}
+    .puzzle-slot.solved{border-style:solid;border-color:rgba(197,139,255,.35)}
+    .puzzle-tray{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px;padding:10px;background:rgba(16,12,48,.75);border:1px solid var(--line);border-radius:8px;min-height:74px;touch-action:none}
+    .puzzle-piece{border:1px solid var(--gold);border-radius:4px;box-shadow:0 4px 10px rgba(0,0,0,.65);cursor:grab;touch-action:none;user-select:none;flex-shrink:0}
+    .puzzle-piece.solved{border-color:#b8ffcf;box-shadow:0 0 10px rgba(120,255,180,.35);cursor:default}
+    .puzzle-floating{position:fixed;z-index:1200;pointer-events:none;border:2px solid var(--gold);border-radius:4px;box-shadow:0 12px 24px rgba(0,0,0,.85);transform:translate(-50%,-50%) scale(1.06)}
+    .puzzle-win{margin-top:10px;padding:10px 14px;border-radius:8px;background:rgba(46,34,110,.9);border:1px solid var(--gold);color:#ffe9a8;font-size:14px;text-align:center}
     @media(max-width:600px){
   .page{padding:22px 12px 32px}
   .scroll-wrapper{padding:0 10px;max-width:100%;overflow:hidden}
@@ -279,11 +298,12 @@
     <p class="lead fell"></p>
     <svg class="orn" viewBox="0 0 160 12" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 6h60M98 6h60"/><path d="M80 1l5 5-5 5-5-5z" fill="currentColor"/><circle cx="68" cy="6" r="2"/><circle cx="92" cy="6" r="2"/></svg>
     <div class="section-toolbar admin-only"><button class="btn" onclick="app.openEventModal()">＋ 新增活動紀錄</button></div>
-    <div class="timeturner-wrap">
+   <div class="timeturner-wrap" style="gap:10px;flex-wrap:wrap;align-items:center">
       <button type="button" class="timeturner-btn" id="timeTurnerBtn" onclick="timeTurner.open()">
         <span class="tt-icon" aria-hidden="true">⏳</span>
         <span>✦ 時光器：隨機回顧一場活動</span>
       </button>
+      <button type="button" class="btn" onclick="puzzle.openPicker()">🧩 活動照片拼圖</button>
     </div>
     <div id="eventList"></div>
   </section>
@@ -1578,7 +1598,257 @@ function initHallAmbience() {
 
   host.appendChild(frag);
 }
+const puzzle = {
+  size: 3,
+  showHint: true,
+  moves: 0,
+  meta: null,
+  pieces: [],
+  boardRect: { w: 300, h: 225 },
+  dragState: null,
+  _choices: [],
 
+  openPicker() {
+    const choices = [];
+    (app.getSortedEvents ? app.getSortedEvents() : (app.data?.events || [])).forEach((ev) => {
+      (ev.photos || []).forEach((p, idx) => {
+        const url = p.url || app.makePh(p.hue || 250, ev.title, p.caption || `照片 ${idx + 1}`);
+        choices.push({
+          evTitle: ev.title,
+          caption: p.caption || `照片 ${idx + 1}`,
+          url
+        });
+      });
+    });
+
+    if (!choices.length) {
+      alert("目前還沒有活動照片可以拼圖喔！");
+      return;
+    }
+
+    app.showModal(`
+      <h3>🧩 選擇一張活動照片開玩</h3>
+      <p style="font-size:13px;color:var(--muted);margin:0 0 10px">挑選喜歡的回憶照片，把拼片拖曳放到對應的格子裡吧！</p>
+      <div class="puzzle-picker">
+        ${choices.map((c, i) => `
+          <button type="button" class="puzzle-choice" onclick="puzzle.startByIndex(${i})">
+            <img src="${app.esc(c.url)}" alt="${app.esc(c.caption)}">
+            <div class="ptitle">${app.esc(c.evTitle)}</div>
+            <div class="psub">${app.esc(c.caption)}</div>
+          </button>
+        `).join("")}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="app.closeModal()">關閉</button>
+      </div>
+    `);
+    this._choices = choices;
+  },
+
+  startByIndex(idx) {
+    const item = (this._choices || [])[idx];
+    if (!item) return;
+    this.meta = item;
+    this.moves = 0;
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const ratio = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 4 / 3;
+      const maxW = Math.min(390, Math.max(250, (document.getElementById("editorContent")?.clientWidth || 360) - 48));
+      const boardW = Math.round(maxW);
+      const boardH = Math.round(boardW / ratio);
+      this.boardRect = { w: boardW, h: boardH };
+
+      const total = this.size * this.size;
+      const pieceW = boardW / this.size;
+      const pieceH = boardH / this.size;
+
+      this.pieces = Array.from({ length: total }, (_, idxPiece) => {
+        const row = Math.floor(idxPiece / this.size);
+        const col = idxPiece % this.size;
+        const c = document.createElement("canvas");
+        c.width = Math.round(pieceW * 2);
+        c.height = Math.round(pieceH * 2);
+        const ctx = c.getContext("2d");
+        const srcW = img.naturalWidth / this.size;
+        const srcH = img.naturalHeight / this.size;
+        ctx.drawImage(img, col * srcW, row * srcH, srcW, srcH, 0, 0, c.width, c.height);
+        return {
+          id: idxPiece,
+          placedAt: null,
+          solved: false,
+          dataUrl: c.toDataURL("image/jpeg", 0.88),
+          w: Math.round(pieceW),
+          h: Math.round(pieceH)
+        };
+      });
+
+      this.shuffle();
+      this.renderGame();
+    };
+    img.onerror = () => {
+      alert("這張圖片暫時無法載入拼圖，請換一張試試。");
+    };
+    img.src = item.url;
+  },
+
+  shuffle() {
+    this.moves = 0;
+    const order = this.pieces.map((_, i) => i);
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    this.pieces.forEach((p, idx) => {
+      p.placedAt = null;
+      p.solved = false;
+      p.order = order[idx];
+    });
+  },
+
+  setSize(n) {
+    this.size = n;
+    const idx = (this._choices || []).indexOf(this.meta);
+    if (idx >= 0) this.startByIndex(idx);
+  },
+
+  toggleHint() {
+    this.showHint = !this.showHint;
+    this.renderGame();
+  },
+
+  renderGame() {
+    const total = this.size * this.size;
+    const solvedCount = this.pieces.filter((p) => p.solved).length;
+    const isWin = solvedCount === total;
+    const trayPieces = [...this.pieces]
+      .filter((p) => p.placedAt === null)
+      .sort((a, b) => a.order - b.order);
+
+    app.showModal(`
+      <h3>🧩 ${app.esc(this.meta?.caption || "活動拼圖")}</h3>
+      <div class="puzzle-toolbar">
+        <button type="button" class="btn btn-sm ${this.size === 3 ? "" : "btn-ghost"}" onclick="puzzle.setSize(3)">3×3</button>
+        <button type="button" class="btn btn-sm ${this.size === 4 ? "" : "btn-ghost"}" onclick="puzzle.setSize(4)">4×4</button>
+        <button type="button" class="btn btn-sm btn-ghost" onclick="puzzle.toggleHint()">${this.showHint ? "隱藏底圖" : "顯示底圖"}</button>
+        <button type="button" class="btn btn-sm btn-ghost" onclick="puzzle.shuffle();puzzle.renderGame()">重新洗牌</button>
+        <button type="button" class="btn btn-sm btn-ghost" onclick="puzzle.openPicker()">換照片</button>
+      </div>
+      <div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:8px">
+        已歸位 ${solvedCount} / ${total} 片 ・ 移動次數：${this.moves}
+      </div>
+      <div class="puzzle-board" id="puzzleBoard" style="width:${this.boardRect.w}px;height:${this.boardRect.h}px">
+        ${this.showHint && this.meta?.url ? `<img class="puzzle-ghost" src="${app.esc(this.meta.url)}" alt="">` : ""}
+        <div class="puzzle-grid" style="grid-template-columns:repeat(${this.size},1fr);grid-template-rows:repeat(${this.size},1fr)">
+          ${Array.from({ length: total }, (_, slotIdx) => {
+            const placed = this.pieces.find((p) => p.placedAt === slotIdx);
+            return `
+              <div class="puzzle-slot ${placed?.solved ? "solved" : ""}" data-slot="${slotIdx}">
+                ${placed ? `<img class="puzzle-piece ${placed.solved ? "solved" : ""}" src="${placed.dataUrl}" data-piece="${placed.id}" style="width:100%;height:100%;object-fit:cover" draggable="false">` : ""}
+              </div>
+            `;
+          }).join("")}
+        </div>
+      </div>
+      <div class="puzzle-tray" id="puzzleTray">
+        ${trayPieces.length
+          ? trayPieces.map((p) => `<img class="puzzle-piece" src="${p.dataUrl}" data-piece="${p.id}" style="width:${p.w}px;height:${p.h}px" draggable="false">`).join("")
+          : `<span style="font-size:12px;color:var(--muted);align-self:center">所有拼片都已放上棋盤！</span>`}
+      </div>
+      ${isWin ? `<div class="puzzle-win">✦ 拼圖完成！《${app.esc(this.meta?.evTitle || "")}》的回憶完整重現了！</div>` : ""}
+      <div class="modal-footer">
+        ${isWin ? `<button type="button" class="btn" onclick="puzzle.shuffle();puzzle.renderGame()">再玩一次</button>` : ""}
+        <button type="button" class="btn btn-ghost" onclick="app.closeModal()">關閉</button>
+      </div>
+    `);
+    this.bindDrag();
+  },
+
+  bindDrag() {
+    const piecesEls = document.querySelectorAll("#editorContent .puzzle-piece:not(.solved)");
+    piecesEls.forEach((el) => {
+      el.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        const id = Number(el.dataset.piece);
+        const piece = this.pieces.find((x) => x.id === id);
+        if (!piece || piece.solved) return;
+
+        const ghost = document.createElement("img");
+        ghost.src = piece.dataUrl;
+        ghost.className = "puzzle-floating";
+        ghost.style.width = piece.w + "px";
+        ghost.style.height = piece.h + "px";
+        ghost.style.left = e.clientX + "px";
+        ghost.style.top = e.clientY + "px";
+        document.body.appendChild(ghost);
+
+        this.dragState = { piece, ghost };
+        this.highlightSlotAt(e.clientX, e.clientY);
+      });
+    });
+
+    const onMove = (e) => {
+      if (!this.dragState) return;
+      this.dragState.ghost.style.left = e.clientX + "px";
+      this.dragState.ghost.style.top = e.clientY + "px";
+      this.highlightSlotAt(e.clientX, e.clientY);
+    };
+
+    const onUp = (e) => {
+      if (!this.dragState) return;
+      const { piece, ghost } = this.dragState;
+      const targetSlot = this.findSlotAt(e.clientX, e.clientY);
+      ghost.remove();
+      document.querySelectorAll(".puzzle-slot.over").forEach((s) => s.classList.remove("over"));
+      this.dragState = null;
+
+      if (targetSlot !== null) {
+        const occupant = this.pieces.find((p) => p.placedAt === targetSlot && p.id !== piece.id);
+        if (occupant && !occupant.solved) {
+          occupant.placedAt = null;
+        }
+        if (!occupant || !occupant.solved) {
+          piece.placedAt = targetSlot;
+          this.moves++;
+          if (piece.id === targetSlot) {
+            piece.solved = true;
+          }
+        }
+      } else if (piece.placedAt !== null && !piece.solved) {
+        piece.placedAt = null;
+        this.moves++;
+      }
+
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      this.renderGame();
+    };
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+  },
+
+  findSlotAt(x, y) {
+    const slots = document.querySelectorAll("#puzzleBoard .puzzle-slot");
+    for (const slot of slots) {
+      const r = slot.getBoundingClientRect();
+      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+        return Number(slot.dataset.slot);
+      }
+    }
+    return null;
+  },
+
+  highlightSlotAt(x, y) {
+    const hovered = this.findSlotAt(x, y);
+    document.querySelectorAll("#puzzleBoard .puzzle-slot").forEach((slot) => {
+      slot.classList.toggle("over", Number(slot.dataset.slot) === hovered);
+    });
+  }
+};
 window.addEventListener("DOMContentLoaded", () => { mapCtrl.init(); magicFx.initWandDust(); initHallAmbience(); app.init(); });
 
 </script>
