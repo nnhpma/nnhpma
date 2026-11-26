@@ -229,12 +229,15 @@
 .wand-dust{position:fixed;pointer-events:none;z-index:9998;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle,#fff9dc,#e6c27a 55%,transparent);box-shadow:0 0 8px #e6c27a;animation:dustFade .55s ease-out forwards}
 @keyframes dustFade{0%{opacity:.95;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,calc(-50% + 12px)) scale(.15)}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-/* ✦ 回到頂端浮動按鈕 */
-.back-top-btn{position:fixed;right:20px;bottom:calc(22px + env(safe-area-inset-bottom,0px));width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#352a85,#161042 75%);border:1.5px solid var(--gold);color:var(--gold);font-size:20px;line-height:1;cursor:pointer;display:grid;place-items:center;box-shadow:0 6px 20px rgba(0,0,0,.75),0 0 16px rgba(230,194,122,.35);opacity:0;visibility:hidden;transform:translateY(14px) scale(.9);transition:opacity .25s,transform .25s,visibility .25s,box-shadow .2s;z-index:850}
+/* ✦ 金色飄逸羽毛：回到頂端浮動按鈕 */
+.back-top-btn{position:fixed;right:20px;bottom:calc(22px + env(safe-area-inset-bottom,0px));min-width:56px;padding:7px 8px 6px;border-radius:16px;background:radial-gradient(circle at 32% 24%,#382c8f,#150f3d 78%);border:1.5px solid var(--gold);color:var(--gold);cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 6px 20px rgba(0,0,0,.75),0 0 16px rgba(230,194,122,.35);opacity:0;visibility:hidden;transform:translateY(14px) scale(.92);transition:opacity .25s,transform .25s,visibility .25s,box-shadow .2s;z-index:850}
 .back-top-btn.show{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
-.back-top-btn:hover{transform:translateY(-3px) scale(1.06);box-shadow:0 10px 24px rgba(0,0,0,.85),0 0 24px rgba(230,194,122,.65)}
-.back-top-btn:active{transform:scale(.95)}
-@media(max-width:600px){.back-top-btn{right:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:42px;height:42px;font-size:18px}}
+.back-top-btn:hover{transform:translateY(-3px) scale(1.05);box-shadow:0 10px 24px rgba(0,0,0,.85),0 0 24px rgba(230,194,122,.65)}
+.back-top-btn:hover .feather-svg{transform:translateY(-2px) rotate(6deg)}
+.back-top-btn:active{transform:scale(.96)}
+.feather-svg{width:22px;height:22px;display:block;filter:drop-shadow(0 0 6px rgba(230,194,122,.6));transition:transform .25s ease}
+.back-top-label{font:600 10px/1.2 "Noto Serif TC",serif;color:var(--gold);letter-spacing:.02em;white-space:nowrap}
+@media(max-width:600px){.back-top-btn{right:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));min-width:52px;padding:6px 6px 5px;border-radius:14px}.feather-svg{width:20px;height:20px}.back-top-label{font-size:9.5px}}
   </style>
 </head>
 <body>
@@ -363,7 +366,21 @@
   </footer>
 </div>
 
-  <button type="button" class="back-top-btn" id="backTopBtn" aria-label="回到頁面最頂端" title="回到最頂端" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<button type="button" class="back-top-btn" id="backTopBtn" aria-label="回到頂端" title="回到頂端" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <svg class="feather-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="goldFeatherGrad" x1="20%" y1="15%" x2="80%" y2="85%">
+        <stop offset="0%" stop-color="#fff0ba"/>
+        <stop offset="55%" stop-color="#e6c27a"/>
+        <stop offset="100%" stop-color="#b5832c"/>
+      </linearGradient>
+    </defs>
+    <path d="M20.5 3.5C15.5 3.8 10.6 6.7 7.8 11.2C6.3 13.6 5.7 16.1 5.8 18.2L3.5 20.5" stroke="#ffe7a3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M19.8 4.2C14.8 4.6 10.4 7.4 7.8 11.4C6.6 13.2 6.2 15.1 6.4 16.8C9.1 16.6 12.1 15.3 14.8 12.6C17.4 10 19.1 7.1 19.8 4.2Z" fill="url(#goldFeatherGrad)" fill-opacity="0.88"/>
+    <path d="M9.4 14.6L16.5 7.5" stroke="#fff7d6" stroke-width="1" stroke-linecap="round" opacity="0.8"/>
+  </svg>
+  <span class="back-top-label">【回到頂端】</span>
+</button>
 <div class="lightbox" id="lightbox" onclick="if(event.target===this)lb.close()">
   <button type="button" class="lb-close" onclick="lb.close()">✕</button>
   <button type="button" class="lb-prev" onclick="lb.step(-1)">‹</button>
